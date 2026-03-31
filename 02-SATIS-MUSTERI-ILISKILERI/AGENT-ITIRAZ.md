@@ -34,7 +34,7 @@ Gelen mesajlarda anahtar kelime tara:
    "Bu lead 2 kez itiraz etti, kisisel mudahale gerekli"
 ```
 
-Airtable'a not: itiraz turu + karsilama + sonuc
+NocoDB'a not: itiraz turu + karsilama + sonuc
 
 ### 4. OGRENIM
 - Her itiraz + karsilama + sonucu `ITIRAZLAR` tablosuna kaydet
@@ -57,5 +57,5 @@ Airtable'a not: itiraz turu + karsilama + sonuc
 
 ## BAGIMLILIKLAR
 - ITIRAZ-KARSILAMA.md (script rehberi)
-- Airtable CRM (LEADLER + ITIRAZLAR + ETKILESIMLER tablolari)
-- n8n Workflow #6: Airtable → Itiraz karsilama
+- NocoDB CRM (LEADLER + ITIRAZLAR + ETKILESIMLER tablolari)
+- n8n Workflow #6: NocoDB → Itiraz karsilama

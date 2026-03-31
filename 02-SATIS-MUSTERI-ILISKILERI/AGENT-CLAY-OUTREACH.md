@@ -13,7 +13,7 @@ Clay ile Bodrum/Mugla bolgesini tara:
 - **Sektor:** restoran, otel, cafe, butik, perakende
 - **Topla:** isim, adres, telefon, web sitesi, Instagram, Google puani
 
-Her isletmeyi Airtable `LEADLER` tablosuna kaydet:
+Her isletmeyi NocoDB `LEADLER` tablosuna kaydet:
 - `kaynak` = "Clay"
 - `asama` = "Yeni"
 
@@ -26,7 +26,7 @@ Her isletmeyi Airtable `LEADLER` tablosuna kaydet:
 | Gorseller kalitesiz | Gorsel ihtiyaci | "AI gorsel uretim ile markanizi one cikarin" |
 | Her seyi var | Optimizasyon | "AI ile mevcut dijital varliginizi guclendirin" |
 
-Ihtiyac tespitini Airtable'a `ihtiyac_notu` olarak yaz.
+Ihtiyac tespitini NocoDB'a `ihtiyac_notu` olarak yaz.
 
 ### 3. KISISELLESTIRILMIS MESAJ GONDER
 
@@ -57,6 +57,6 @@ Her isletme = 1 lead kaydi:
 
 ## BAGIMLILIKLAR
 - Clay.com API erisimi
-- Airtable CRM (LEADLER + ETKILESIMLER tablolari)
-- n8n Workflow #3: Clay → Airtable
+- NocoDB CRM (LEADLER + ETKILESIMLER tablolari)
+- n8n Workflow #3: Clay → NocoDB
 - LinkedIn Agent (koordinasyon)

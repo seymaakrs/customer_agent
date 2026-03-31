@@ -22,7 +22,7 @@
 ### 1. ARAMA (her 4 saatte 1 tur)
 - LinkedIn'de yukardaki filtrelerle ara
 - Gunluk 20 yeni profil bul
-- Her profili Airtable'a kaydet:
+- Her profili NocoDB'a kaydet:
   - `ad_soyad`, `sirket_adi`, `pozisyon`, `sektor`, `linkedin_url`, `konum`
   - `kaynak` = "LinkedIn"
   - `asama` = "Yeni"
@@ -45,9 +45,9 @@ Kisisellestirilmis not ile baglanti iste:
 ### 4. YANITLARI ISLE
 | Yanit Tipi | Aksiyon |
 |------------|---------|
-| Olumlu | Airtable'da `asama` → "Ilik" + Seyma'ya ANINDA bildirim |
-| Soru sordu | Cevapla (ITIRAZ-KARSILAMA.md'ye bak) + Airtable guncelle |
-| Olumsuz | Airtable'da `asama` → "Kayip" + 30 gun sonra tekrar dene |
+| Olumlu | NocoDB'da `asama` → "Ilik" + Seyma'ya ANINDA bildirim |
+| Soru sordu | Cevapla (ITIRAZ-KARSILAMA.md'ye bak) + NocoDB guncelle |
+| Olumsuz | NocoDB'da `asama` → "Kayip" + 30 gun sonra tekrar dene |
 
 ### 5. CRM KAYIT (her islemde)
 Her etkilesimi `ETKILESIMLER` tablosuna yaz:
@@ -57,18 +57,18 @@ Her etkilesimi `ETKILESIMLER` tablosuna yaz:
 
 ## PERFORMANS HEDEFI
 
-| Metrik | Gunluk | Haftalik |
-|--------|--------|----------|
-| Yeni profil bulma | 20 | 140 |
-| Baglanti istegi | 20 | 140 |
-| Mesaj gonderme | 30 | 210 |
-| Yanit alma | 5+ | 35+ |
-| Sicak lead (Seyma'ya) | 2+ | 14+ |
+| Metrik | Gunluk | Haftalik | Aylik |
+|--------|--------|----------|-------|
+| Yeni profil bulma | 30 | 210 | 900 |
+| Baglanti istegi | 30 | 210 | 900 |
+| Mesaj gonderme | 50 | 350 | 1.500 |
+| Yanit alma | 8+ | 56+ | 240+ |
+| Sicak lead (Seyma'ya) | 3+ | 21+ | 90+ |
 
 ---
 
 ## BAGIMLILIKLAR
-- Airtable CRM (LEADLER + ETKILESIMLER tablolari)
-- n8n Workflow #1: LinkedIn → Airtable
+- NocoDB CRM (LEADLER + ETKILESIMLER tablolari)
+- n8n Workflow #1: LinkedIn → NocoDB
 - Takip Agent (yanit gelmeyenler icin)
 - Itiraz Agent (soru/itiraz gelirse)

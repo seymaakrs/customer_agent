@@ -7,7 +7,7 @@
 
 ## GOREV ZINCIRI
 
-### 1. AIRTABLE'I TARA (her 6 saatte)
+### 1. NOCODB'I TARA (her 6 saatte)
 - `asama` = "Soguk" veya "Ilik" olan leadleri kontrol et
 - Son iletisimden bu yana gecen sureyi hesapla
 - `TAKIP KUYRUGU` tablosundan aktif takipleri oku
@@ -32,7 +32,7 @@ Hicbiri olmadi             → Telefon listesine ekle (Seyma arar)
 ```
 
 ### 4. CRM GUNCELLE (her islemde)
-Airtable `TAKIP KUYRUGU` tablosunu guncelle:
+NocoDB `TAKIP KUYRUGU` tablosunu guncelle:
 - `son_iletisim_tarihi`
 - `takip_sayisi` +1
 - `denenen_kanallar` guncelle
@@ -53,6 +53,6 @@ Airtable `TAKIP KUYRUGU` tablosunu guncelle:
 ---
 
 ## BAGIMLILIKLAR
-- Airtable CRM (LEADLER + TAKIP KUYRUGU + ETKILESIMLER tablolari)
-- n8n Workflow #5: Airtable → Takip mesaji
+- NocoDB CRM (LEADLER + TAKIP KUYRUGU + ETKILESIMLER tablolari)
+- n8n Workflow #5: NocoDB → Takip mesaji
 - Tum kanallara erisim (Email, LinkedIn, IG, WhatsApp)

@@ -23,7 +23,7 @@
 > 3. En cok hangi konuda desteGe ihtiyaciniz var?"
 
 ### 3. BILGI GELINCE → CRM'E YAZ
-Airtable `LEADLER` tablosuna kaydet:
+NocoDB `LEADLER` tablosuna kaydet:
 - `ad_soyad`, `sirket_adi`, `instagram`, `ihtiyac_notu`
 - `kaynak` = "IG DM" veya "TikTok DM"
 - `asama` = "Ilik" (aktif ilgi gosterdi)
@@ -47,6 +47,6 @@ Airtable `LEADLER` tablosuna kaydet:
 ---
 
 ## BAGIMLILIKLAR
-- n8n Workflow #4: IG DM → Airtable
+- n8n Workflow #4: IG DM → NocoDB
 - Instagram API / TikTok API
-- Airtable CRM (LEADLER tablosu)
+- NocoDB CRM (LEADLER tablosu)

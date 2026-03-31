@@ -16,7 +16,7 @@
 | CPL | > 50 TL | Kampanyayi durdur, analiz yap |
 
 ### 2. LEAD ISLE (aninda)
-- Meta lead form dolduran → ANINDA Airtable `LEADLER` tablosuna yaz
+- Meta lead form dolduran → ANINDA NocoDB `LEADLER` tablosuna yaz
   - `kaynak` = "Meta Ads"
   - `asama` = "Yeni"
   - Lead skorunu hesapla (form dolduran = +25 puan)
@@ -28,7 +28,7 @@
 - Kaybedeni kapat, kazanana butce artir
 
 ### 4. GUNLUK RAPOR (23:00)
-Airtable `KAMPANYALAR` tablosuna yaz:
+NocoDB `KAMPANYALAR` tablosuna yaz:
 - Harcanan butce
 - Toplam erisim / tiklanma / lead sayisi
 - En iyi performans gosteren reklam
@@ -49,7 +49,7 @@ Airtable `KAMPANYALAR` tablosuna yaz:
 ---
 
 ## BAGIMLILIKLAR
-- Airtable CRM (LEADLER + KAMPANYALAR tablolari)
-- n8n Workflow #2: Meta Lead Form → Airtable
+- NocoDB CRM (LEADLER + KAMPANYALAR tablolari)
+- n8n Workflow #2: Meta Lead Form → NocoDB
 - Meta Ads API erişimi
 - Reklam gorselleri / videolari
