@@ -1,138 +1,152 @@
-# YAPILACAKLAR — ONCELIK SIRASI
+# YAPILACAKLAR — GUNCELLENMIS DURUM (12 Nisan 2026)
 
-## KATEGORI 1: HEMEN YAPILMALI (Bu Hafta)
-
-### P1. Meta Ads Form → Webhook Baglantisi
-- **Neden oncelikli:** Gunluk 150 lead buradan gelecek (en buyuk hacim)
-- **Gereksinimler:** Meta Business Manager hesabi, aktif reklam kampanyasi
-- **Yapilacak:** Meta lead form → n8n webhook (lead-toplama) bagla
-- **Sonuc:** Form dolduran kisi otomatik CRM'e duser + Sicaksa Seyma'ya mail
-
-### P2. NocoDB Sektor Listesini Genislet
-- **Neden oncelikli:** Workflow'da "Diger" sabit yazili, yeni sektorler taninamıyor
-- **Yapilacak:** NocoDB arayuzunden sektor kolonuna yeni secenekler ekle
-- **Secenekler:** Tekne-Yat, Emlak, Spa-Wellness, Doktor-Uzman, Koc-Egitmen, Kurumsal-Kamu, Butik-Moda, Kafe, Restoran
-- **Sonuc:** Her sektor dogru kayit edilir
-
-### P3. Duplicate Kayit Kontrolu
-- **Neden oncelikli:** Ayni lead 2 kez gelirse 2 satir olusuyor
-- **Yapilacak:** Lead Toplama workflow'una "once kontrol et, varsa guncelle" mantigi ekle
-- **Sonuc:** Temiz veri, duplike yok
-
-### P4. Test Verilerini Temizle
-- **Neden oncelikli:** NocoDB'de 17+ test kaydi var, gercek verilerle karisir
-- **Yapilacak:** Test Lead, Ahmet Yilmaz (duplike), Test Sicak gibi kayitlari sil
-- **Sonuc:** Temiz CRM
-
----
-
-## KATEGORI 2: BU HAFTA ICINDE
-
-### P5. Itiraz Agent Workflow
-- **Neden oncelikli:** Lead gelince "pahali" diyene otomatik cevap
-- **Gereksinimler:** Claude API veya GPT API key
-- **Yapilacak:** n8n workflow: mesaj geldi → anahtar kelime tara → AI ile cevap yaz → gonder
-- **Sonuc:** Itirazlar otomatik karsilanir
-
-### P6. Gunluk Rapor Workflow
-- **Neden oncelikli:** Her gun 23:00'te Seyma'ya ozet gitsin
-- **Yapilacak:** Schedule Trigger (23:00) → NocoDB'den istatistik cek → Email gonder
-- **Icerik:** Bugunku yeni lead, mesaj, yanit, sicak lead, kapanis sayilari
-- **Sonuc:** Gunluk performans takibi
-
-### P7. Clay → Webhook Tam Otomasyon
-- **Neden oncelikli:** Clay'dan lead'ler otomatik aksin
-- **Secenekler:**
-  - A: Claude MCP uzerinden (sen tetiklersin)
-  - B: Haftalik CSV export + n8n import workflow
-  - C: Clay upgrade ($149/ay) → tam otomatik
-- **Onerilen:** B ile basla, ciro artinca C'ye gec
-
-### P8. DNS + SSL (nocodb.mindid.shop)
-- **Neden:** Profesyonel gorunum, guvenli erisim
-- **Yapilacak:** DNS A kaydi + Certbot SSL + Nginx HTTPS
-- **Sonuc:** http://34.26.138.196 yerine https://nocodb.mindid.shop
-
-### P9. Kullanici Rolleri
-- **Yapilacak:** NocoDB'ye Seyma (Owner), Beyza (Owner), Burak (Editor) ekle
-- **Sonuc:** Ekip CRM'e erisir
-
----
-
-## KATEGORI 3: GELECEK HAFTA
-
-### P10. DM Bot Agent (Instagram/TikTok)
-- **Gereksinimler:** ManyChat hesabi veya Instagram API
-- **Yapilacak:** Yeni takipci → otomatik hosgeldin mesaji → bilgi topla → webhook → CRM
-- **Sonuc:** IG/TikTok'tan gunluk 40 lead
-
-### P11. LinkedIn Agent (Alternatif Yol)
-- **Gercek:** LinkedIn API mesaj gondermeye izin vermiyor
-- **Alternatif:** Clay/Phantombuster ile lead listesi cek → email outreach
-- **Yapilacak:** Clay'dan lead bul → email yaz (AI ile) → gonder → CRM takip
-- **Sonuc:** LinkedIn kaynakli gunluk 30 lead (email uzerinden)
-
-### P12. Email Outreach Sistemi
-- **Gereksinimler:** mindid.shop domain isinmasi (SPF/DKIM/DMARC)
-- **Yapilacak:** n8n workflow: CRM'den lead cek → Claude API kisisellestirmis email yaz → Gmail/SMTP ile gonder
-- **Dikkat:** Gunluk 10 ile basla, yavas artir (ban onleme)
-- **Sonuc:** Otomatik kisisellestirmis email outreach
-
-### P13. WhatsApp Bildirim
-- **Gereksinimler:** WhatsApp Business API
-- **Yapilacak:** Sicak lead gelince email yerine (veya yaninda) WhatsApp bildirimi
-- **Sonuc:** Seyma aninda gorur, mail kutusuna bakmak zorunda kalmaz
-
-### P14. Lead Skorlama Sistemi
-- **Yapilacak:** n8n'de Code node ile skor hesapla
-- **Kriterler:** Sektor eslesmesi (+20), Pozisyon CEO/GM (+15), Konum Bodrum (+10), Form doldurdu (+25), Mesaja yanit verdi (+20)
-- **Sonuc:** Her lead 0-100 puan, Seyma oncelikli olanlara odaklanir
-
----
-
-## KATEGORI 4: 2-3 HAFTA ICINDE
-
-### P15. Meta Ads Agent (Kampanya Yonetimi)
-- **Yapilacak:** n8n workflow: Meta API'den kampanya verilerini cek → CTR/CPC/CPL kontrol → otomatik durdur/basla
-- **Sonuc:** Reklam optimizasyonu yari-otomatik
-
-### P16. A/B Test Yonetimi
-- **Yapilacak:** Meta'da 2 farkli reklam → 48 saat sonra otomatik karsilastir → kazanani sec
-- **Sonuc:** Reklam performansi surekli iyilesir
-
-### P17. Upsell Agent
-- **Yapilacak:** Mevcut musterilere 30 gun sonra otomatik upgrade teklifi
-- **Sonuc:** Mevcut musterilerden ek gelir
-
-### P18. Referans Agent
-- **Yapilacak:** "Arkadasini getir %10 indirim" otomatik takibi
-- **Sonuc:** Organik buyume
-
-### P19. Haftalik Performans Raporu
-- **Yapilacak:** Her Cuma otomatik haftalik ozet
-- **Icerik:** Haftalik lead, kapanis, ciro, en iyi kanal, sapma analizi
-- **Sonuc:** Stratejik karar alma
-
-### P20. NocoDB Marka Ozellestirmesi
-- **Yapilacak:** Logo, renk, baslik degistirme (Docker rebuild)
-- **Sonuc:** "NocoDB" yerine "MindID LAB" gorunumu
-
----
-
-## ZAMAN CIZELGESI
+## MIMARI GENEL BAKIS
 
 ```
-HAFTA 1 (Su an):  P1-P4  → Temel eksikleri kapat
-HAFTA 2:          P5-P9  → Itiraz, rapor, Clay, DNS, roller
-HAFTA 3:          P10-P14 → DM Bot, LinkedIn, Email, WhatsApp, Skorlama
-HAFTA 4:          P15-P20 → Meta optimizasyon, Upsell, Referans, Branding
+╔══════════════════════════════════════════════════════════════════╗
+║           HEDEF: 240.000 TL / 30 GUN (1-30 NISAN 2026)         ║
+║           HAFTALIK: 60.000 TL | GUNLUK LEAD: MIN 300           ║
+╚══════════════════════════════════════════════════════════════════╝
+                              ↑
+                    SEYMA (KAPANIS + ONAY)
+                              ↑
+                 ┌────────────┴────────────┐
+                 │      NOCODB CRM         │  ✅ KURULDU
+                 │  (TEK BULUSMA NOKTASI)  │
+                 └────────────┬────────────┘
+                              ↑
+        ┌─────────┬─────────┬─┴──────┬──────────┬──────────┐
+        ↑         ↑         ↑        ↑          ↑          ↑
+   ╔════════╗ ╔════════╗ ╔═══════╗ ╔═══════╗ ╔═══════╗ ╔═══════╗
+   ║LINKEDIN║ ║  META  ║ ║ CLAY  ║ ║DM BOT ║ ║TAKIP  ║ ║ITIRAZ ║
+   ║ AGENT  ║ ║ AGENT  ║ ║ AGENT ║ ║ AGENT ║ ║ AGENT ║ ║ AGENT ║
+   ╚════════╝ ╚════════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝ ╚═══════╝
+      ❌          ❌        🟡         ❌        ✅          ❌
 ```
 
-## BASARI OLCUTU
+---
 
-Her hafta sonu kontrol:
-- Gunluk 300 lead hedefine ne kadar yakiniz?
-- Kac sicak lead Seyma'ya ulasti?
-- Kac teklif gonderildi?
-- Kac kapanis yapildi?
-- Haftalik 60K TL hedefine ne kadar yakiniz?
+## TAMAMLANANLAR ✅
+
+### Altyapi
+| # | Is | Durum |
+|---|-----|-------|
+| 1 | Google Cloud VM kurulumu (e2-micro, us-east1-d) | ✅ |
+| 2 | Docker ile NocoDB deploy (v0.301.5) | ✅ |
+| 3 | NocoDB CRM — 7 tablo olusturuldu | ✅ |
+| 4 | n8n → NocoDB baglantisi (API Token) | ✅ |
+| 5 | Clay MCP baglantisi | ✅ |
+| 6 | Gmail baglantisi | ✅ |
+| 7 | Agent dosyalari (6 agent + itiraz rehberi) | ✅ |
+| 8 | Hedef kitle segmentasyonu dosyasi | ✅ |
+| 9 | Hedef guncelleme (240K/30 gun, 300 lead/gun) | ✅ |
+| 10 | Tum dokumanlarda Airtable → NocoDB gecisi | ✅ |
+
+### Workflow'lar
+| # | Workflow | Ne Yapiyor | Durum |
+|---|----------|-----------|-------|
+| 1 | **Takip Agent** | Her 6 saatte CRM tarar, Yeni/Soguk leadleri Seyma'ya mail atar | ✅ Published |
+| 2 | **Lead Toplama Agent** | Webhook'tan lead alir, NocoDB'ye kaydeder, Sicak/Ilik ise Seyma'ya mail | ✅ Published |
+| 3 | **Gunluk Rapor** | Her gece 23:00'te lead ozeti + kaynak dagilimi Seyma'ya mail | ✅ Published |
+
+### Diger Tamamlananlar
+| # | Is | Durum |
+|---|-----|-------|
+| P2 | NocoDB sektor listesi genisletildi (15 sektor) | ✅ |
+| P4 | Test verileri temizlendi | ✅ |
+| — | Clay → Webhook testi basarili (5 gercek Bodrum lead) | ✅ |
+| — | Ban onleme stratejisi belirlendi | ✅ |
+| — | Hibrit mimari karari (n8n + AI API + kod) | ✅ |
+
+---
+
+## YAPILAMAYANLAR / ERTELENENLER ⏸️
+
+| # | Is | Neden | Yeni Plan |
+|---|-----|-------|-----------|
+| P1 | Meta Ads form → webhook | Meta Business Manager hesabi olusturuluyor | Hesap hazir olunca |
+| P3 | Duplicate kontrolu | n8n'de bos sonuc IF node'u tetiklemiyor | Farkli yontemle ileride |
+| — | n8n SDK ile otomatik workflow olusturma | SDK syntax hatasi (MCP sorunu) | n8n arayuzunden elle |
+
+---
+
+## YAPILACAKLAR ❌ (Oncelik Sirasinda)
+
+### ONCELIK 1 — Meta Hesabi Gelince
+| # | Is | Beklenen Sonuc |
+|---|-----|----------------|
+| P1 | Meta Ads form → webhook baglantisi | Gunluk 150 lead otomatik CRM'e dusecek |
+| P15 | Meta kampanya izleme (CTR/CPC/CPL) | Reklam optimizasyonu |
+| P16 | A/B test yonetimi | En iyi reklam otomatik secilecek |
+
+### ONCELIK 2 — Bu Hafta Yapilabilir
+| # | Is | Beklenen Sonuc |
+|---|-----|----------------|
+| P5 | Itiraz Agent (Claude/GPT API) | "Pahali" diyene otomatik akilli cevap |
+| P14 | Lead skorlama sistemi | Her lead 0-100 puan, onceliklendirme |
+| P8 | DNS + SSL (nocodb.mindid.shop) | Profesyonel erisim |
+| P9 | Kullanici rolleri (Seyma, Beyza, Burak) | Ekip CRM erisimi |
+
+### ONCELIK 3 — Gelecek Hafta
+| # | Is | Beklenen Sonuc |
+|---|-----|----------------|
+| P7 | Clay → Webhook tam otomasyon | Lead akisi otomatik |
+| P10 | DM Bot Agent (Instagram/TikTok) | Gunluk 40 lead |
+| P11 | LinkedIn Agent (Clay + email yolu) | Gunluk 30 lead |
+| P12 | Email outreach sistemi | Otomatik kisisellestirmis email |
+| P13 | WhatsApp bildirim | Sicak lead aninda WhatsApp'a dusecek |
+
+### ONCELIK 4 — 2-3 Hafta Icinde
+| # | Is | Beklenen Sonuc |
+|---|-----|----------------|
+| P3 | Duplicate kontrolu (farkli yontem) | Ayni lead 2 kez kaydedilmez |
+| P17 | Upsell Agent | Mevcut musteriye upgrade teklifi |
+| P18 | Referans Agent | "Arkadasini getir %10 indirim" |
+| P19 | Haftalik performans raporu | Her Cuma stratejik ozet |
+| P20 | NocoDB marka ozellestirmesi | "MindID LAB" branding |
+
+---
+
+## 6 AGENT DURUMU
+
+| Agent | Mimari Hedefi | Mevcut Durum | Eksik |
+|-------|--------------|-------------|-------|
+| **LinkedIn Agent** | Lead bul, baglanti iste, mesaj at | ❌ Yapilmadi | LinkedIn API kisitli, Clay+email alternatifi |
+| **Meta Ads Agent** | Kampanya izle, lead topla, A/B test | ❌ Yapilmadi | Meta Business Manager hesabi bekleniyor |
+| **Clay Agent** | Yerel isletme tara, mesaj gonder | 🟡 Yarim | Clay bagli, arama calisiyor, tam otomasyon yok |
+| **DM Bot Agent** | IG/TikTok otomatik mesajlasma | ❌ Yapilmadi | ManyChat entegrasyonu lazim |
+| **Takip Agent** | CRM tara, yanit vermeyenleri kovala | ✅ Calisiyor | Her 6 saatte otomatik |
+| **Itiraz Agent** | Itiraz tespit, AI ile karsilama | ❌ Yapilmadi | Claude/GPT API entegrasyonu lazim |
+
+## 8 n8n WORKFLOW DURUMU
+
+| # | Workflow | Durum |
+|---|---------|-------|
+| 1 | LinkedIn → NocoDB | ❌ |
+| 2 | Meta Lead Form → NocoDB | ❌ (Meta hesabi bekleniyor) |
+| 3 | Clay → NocoDB | 🟡 (webhook calisiyor, Clay otomasyonu yok) |
+| 4 | IG DM → NocoDB | ❌ |
+| 5 | NocoDB → Takip mesaji | ✅ Takip Agent |
+| 6 | NocoDB → Itiraz karsilama | ❌ |
+| 7 | NocoDB → Seyma bildirim | ✅ Lead Toplama Agent |
+| 8 | Gunluk rapor | ✅ Gunluk Rapor |
+
+---
+
+## ILERLEME OZETI
+
+```
+Tamamlanan:     15 is  ✅
+Yarim:           2 is  🟡
+Ertelenen:       3 is  ⏸️
+Yapilacak:      15 is  ❌
+
+Genel ilerleme: %45
+
+Calisan Workflow: 3/8
+Calisan Agent:    1/6 (+ 1 yarim)
+```
+
+## SONRAKI ADIM
+Meta Business Manager hesabi hazir olunca P1'e donulecek.
+Bu arada P5 (Itiraz Agent) veya P14 (Lead Skorlama) yapilabilir.
