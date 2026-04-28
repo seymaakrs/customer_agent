@@ -1,7 +1,7 @@
 # MINDID AGENT MIMARISI — ULTRA STRATEJIK ZINCIR SISTEMI
 **Tarih:** 29 Mart 2026
 **HEDEF:** 7 GUNDE 116.000 TL — HER AGENT BU HEDEFE HIZMET EDER
-**KURAL:** Her agent tek basina calisir ama hepsi tek bir noktada bulusur: AIRTABLE CRM → SEYMA → PARA
+**KURAL:** Her agent tek basina calisir ama hepsi tek bir noktada bulusur: NOCODB CRM → SEYMA → PARA
 
 ---
 
@@ -15,7 +15,7 @@
                     SEYMA (KAPANIS + ONAY)
                               ↑
                  ┌────────────┴────────────┐
-                 │     AIRTABLE CRM        │
+                 │     NOCODB CRM        │
                  │  (TEK BULUSMA NOKTASI)  │
                  └────────────┬────────────┘
                               ↑
@@ -40,7 +40,7 @@ ADIM 1: AV (Lead Bulma — 6 Agent Paralel)
   Clay Agent → yerel isletme tara → mesaj at
   DM Bot Agent → IG/TikTok yeni takipci → otomatik mesaj
   ↓
-  TUM LEADLER → AIRTABLE CRM'e duser (otomatik)
+  TUM LEADLER → NOCODB CRM'e duser (otomatik)
   ↓
 
 ADIM 2: ISINMA (Lead Takip — 2 Agent)
@@ -78,7 +78,7 @@ ADIM 4: SONRASI
      Pozisyon: Isletme Sahibi, CEO, GM, Pazarlama Muduru
      Sektor: Otelcilik, Yeme-Icme, Perakende, Turizm, E-ticaret
    → Gunluk 20 yeni profil bul
-   → Her profili Airtable'a kaydet (isim, sirket, pozisyon, sektor, LinkedIn URL)
+   → Her profili NocoDB'a kaydet (isim, sirket, pozisyon, sektor, LinkedIn URL)
 
 2. BAGLANTI ISTEGI (bulunca hemen)
    → Kisisellestirilmis not ile baglanti iste:
@@ -100,12 +100,12 @@ ADIM 4: SONRASI
    Merak ederseniz buradayim. mindid.shop"
 
 4. YANITLARI ISLE
-   → Olumlu yanit → Airtable'da "Ilik" yap → Seyma'ya ANINDA bildirim
-   → Soru sordu → Cevapla (itiraz rehberine bak) → Airtable guncelle
-   → Olumsuz → Airtable'da "Kayip" yap → 30 gun sonra tekrar dene
+   → Olumlu yanit → NocoDB'da "Ilik" yap → Seyma'ya ANINDA bildirim
+   → Soru sordu → Cevapla (itiraz rehberine bak) → NocoDB guncelle
+   → Olumsuz → NocoDB'da "Kayip" yap → 30 gun sonra tekrar dene
 
 5. CRM KAYIT (her islemde)
-   → Airtable'a yaz: isim, sirket, asama, mesaj durumu, tarih, not
+   → NocoDB'a yaz: isim, sirket, asama, mesaj durumu, tarih, not
 ```
 
 ### Performans Hedefi:
@@ -125,6 +125,15 @@ ADIM 4: SONRASI
 **Gorev dosyasi:** `01-PAZARLAMA/reklam-kampanyalari/AGENT-META-REKLAM.md`
 **Amac:** Reklam kampanyalarini yonet, optimize et, lead topla
 
+### n8n Entegrasyonu (GUNCEL DURUM)
+- **Sayfa:** Slowdays Bodrum
+- **Form:** Slowdays Dijital Paketler (Aktif, 24 Nis 2026)
+- **Credential:** Facebook Lead Ads (Selahattin user token uzerinden)
+- **NOT:** Sayfanin sahibi yeni Facebook hesabina (Slwodayss) tasindi.
+  Selahattin user'i sayfa admin'i olarak kaldigi surece mevcut credential calisir.
+  Selahattin admin'likten cikarilirsa workflow SESSIZCE kirilir.
+- **AKSIYON GEREKLI:** Yeni FB hesabiyla yedek credential olustur (parallel calismali).
+
 ### Gorev Zinciri:
 ```
 1. KAMPANYA IZLE (her 2 saatte)
@@ -134,7 +143,7 @@ ADIM 4: SONRASI
    → CPL > 50 TL → kampanyayi durdur, analiz yap
 
 2. LEAD ISLE (aninda)
-   → Meta lead form dolduran → ANINDA Airtable'a yaz
+   → Meta lead form dolduran → ANINDA NocoDB'a yaz
    → Otomatik bildirim Seyma'ya (WhatsApp/Email)
    → Lead skoru hesapla ve ata
 
@@ -148,7 +157,7 @@ ADIM 4: SONRASI
    → Toplam erisim / tiklanma / lead sayisi
    → En iyi performans gosteren reklam
    → Ertesi gun onerisi
-   → Airtable'a rapor kaydi
+   → NocoDB'a rapor kaydi
 ```
 
 ---
@@ -178,7 +187,7 @@ ADIM 4: SONRASI
    → Instagram DM (hemen)
    → LinkedIn (agent 1 ile koordineli)
 
-4. AIRTABLE'A KAYDET
+4. NOCODB'A KAYDET
    → Her isletme = 1 lead kaydi
    → Kaynak: Clay
    → Ihtiyac notu: ne mesaj gonderildi
@@ -208,7 +217,7 @@ ADIM 4: SONRASI
    3. En cok hangi konuda desteGe ihtiyaciniz var?"
 
 3. BILGI GELINCE → CRM'E YAZ
-   → Airtable'a kaydet: isim, isletme, ihtiyac, kaynak: IG DM
+   → NocoDB'a kaydet: isim, isletme, ihtiyac, kaynak: IG DM
    → Lead skoru ata
    → "Ilik" olarak isaretle
    → Seyma'ya bildirim
@@ -228,7 +237,7 @@ ADIM 4: SONRASI
 
 ### Gorev Zinciri:
 ```
-1. AIRTABLE'I TARA (her 6 saatte)
+1. NOCODB'I TARA (her 6 saatte)
    → "Soguk" veya "Ilik" asamadaki leadleri kontrol et
    → Son iletisimden bu yana gecen sure hesapla
 
@@ -244,7 +253,7 @@ ADIM 4: SONRASI
    → LinkedIn gitti, yanit yok → Instagram DM dene
    → Hicbiri olmadi → Telefon listesine ekle (Seyma arar)
 
-4. AIRTABLE GUNCELLE (her islemde)
+4. NOCODB GUNCELLE (her islemde)
    → Son iletisim tarihi
    → Kac takip yapildi
    → Hangi kanallar denendi
@@ -278,7 +287,7 @@ ADIM 4: SONRASI
 3. ESKALASYON (gerekirse)
    → 2 itiraz karsilamadan sonra hala olumsuz →
      Seyma'ya bildir: "Bu lead 2 kez itiraz etti, kisisel mudahale gerekli"
-   → Airtable'a not: itiraz turu + karsilama + sonuc
+   → NocoDB'a not: itiraz turu + karsilama + sonuc
 
 4. OGRENIM
    → Her itiraz + karsilama + sonucu kaydet
@@ -293,36 +302,84 @@ ADIM 4: SONRASI
 ```
 LINKEDIN AGENT ──┐
 META AGENT ──────┤
-CLAY AGENT ──────┼──→ AIRTABLE CRM ──→ TAKIP AGENT ──→ SEYMA
+CLAY AGENT ──────┼──→ NOCODB CRM ──→ TAKIP AGENT ──→ SEYMA
 DM BOT AGENT ────┤         ↑                ↓
                  │    ITIRAZ AGENT ←── Musteri itirazi
                  │         ↓
-                 │    AIRTABLE GUNCELLE
+                 │    NOCODB GUNCELLE
                  │         ↓
                  └──→ 116.000 TL
 ```
 
 **Veri akisi:**
-1. 6 agent paralel lead bulur → Airtable'a yazar
+1. 6 agent paralel lead bulur → NocoDB'a yazar
 2. Takip agent yanit vermeyenleri kovalar
 3. Itiraz agent olumsuz yanitlari karsilar
 4. Sicak lead → Seyma bildirim → Discovery call → Teklif → PARA
-5. Her islem Airtable'da izlenir → Gunluk rapor → Optimizasyon
+5. Her islem NocoDB'da izlenir → Gunluk rapor → Optimizasyon
 
 ---
 
 ## n8n WORKFLOW LISTESI (Kurulmasi Gereken)
 
-| # | Workflow | Tetikleyici | Cikti |
-|---|----------|-------------|-------|
-| 1 | LinkedIn → Airtable | Yeni lead bulundu | CRM kayit |
-| 2 | Meta Lead Form → Airtable | Form doldu | CRM kayit + Seyma bildirim |
-| 3 | Clay → Airtable | Isletme tarandi | CRM kayit |
-| 4 | IG DM → Airtable | "EVET" yazildi | CRM kayit |
-| 5 | Airtable → Takip mesaji | 48 saat gecti | Otomatik mesaj |
-| 6 | Airtable → Itiraz karsilama | Itiraz keylord tespit | Otomatik cevap |
-| 7 | Airtable → Seyma bildirim | Lead "Sicak" oldu | WhatsApp/Email bildirim |
-| 8 | Gunluk rapor | Her gun 23:00 | Ozet rapor Seyma'ya |
+| # | Workflow | Tetikleyici | Cikti | Durum |
+|---|----------|-------------|-------|-------|
+| 1 | LinkedIn → NocoDB | Yeni lead bulundu | CRM kayit | Bekliyor |
+| 2 | Meta Lead Form → NocoDB | Form doldu (Slowdays Dijital Paketler) | CRM kayit + Seyma bildirim | **Trigger hazir, NocoDB node bekliyor** |
+| 3 | Clay → NocoDB | Isletme tarandi | CRM kayit | Bekliyor |
+| 4 | IG DM → NocoDB | "EVET" yazildi | CRM kayit | Bekliyor |
+| 5 | NocoDB → Takip mesaji | 48 saat gecti | Otomatik mesaj | Bekliyor |
+| 6 | NocoDB → Itiraz karsilama | Itiraz keylord tespit | Otomatik cevap | Bekliyor |
+| 7 | NocoDB → Seyma bildirim | Lead "Sicak" oldu | WhatsApp/Email bildirim | Bekliyor |
+| 8 | Gunluk rapor | Her gun 23:00 | Ozet rapor Seyma'ya | Bekliyor |
+
+---
+
+## CRM ALTYAPISI: NOCODB (Airtable'dan Gecis)
+
+**Neden NocoDB:** Self-hosted, sinirsiz kayit, Airtable API uyumlu, ucretsiz.
+
+### Tablo Sablonu (Onerilen)
+
+**leads** (ana tablo)
+| Kolon | Tip | Aciklama |
+|-------|-----|----------|
+| id | AutoNumber | PK |
+| isim | SingleLineText | Ad Soyad |
+| telefon | PhoneNumber | WhatsApp icin |
+| email | Email | - |
+| sirket | SingleLineText | Isletme adi |
+| sektor | SingleSelect | Otel/Restoran/Cafe/Perakende/Diger |
+| kaynak | SingleSelect | LinkedIn/Meta/Clay/IG DM/Referans |
+| asama | SingleSelect | Yeni/Soguk/Ilik/Sicak/Teklif/Kazanildi/Kayip |
+| skor | Number | 0-100 lead skoru |
+| son_iletisim | DateTime | Son mesajlasma |
+| takip_sayisi | Number | Kac kez takip yapildi |
+| seyma_bildirildi | Checkbox | Sicak olunca isaretlenir |
+| not | LongText | Serbest not |
+| created_at | DateTime | Otomatik |
+
+**lead_messages** (mesaj gecmisi)
+| Kolon | Tip |
+|-------|-----|
+| lead_id | LinkToAnotherRecord (leads) |
+| kanal | SingleSelect (LinkedIn/IG/WhatsApp/Email) |
+| yon | SingleSelect (giden/gelen) |
+| mesaj | LongText |
+| created_at | DateTime |
+
+**seyma_notifications** (Seyma'nin gorev kuyrugu)
+| Kolon | Tip |
+|-------|-----|
+| lead_id | LinkToAnotherRecord (leads) |
+| tetikleyici | SingleSelect (sicak_lead/2_itiraz/teklif_zamani) |
+| durum | SingleSelect (bekliyor/goruldu/tamamlandi) |
+| created_at | DateTime |
+
+### n8n NocoDB Node Ayarlari
+- **Credential:** NocoDB API Token (her base icin ayri token)
+- **Node:** "NocoDB" (NoCodeDB) — Create Row / Update Row / Get Rows
+- **Webhook trigger sonrasi:** Field mapping → leads tablosuna insert
 
 ---
 
@@ -349,5 +406,5 @@ DM BOT AGENT ────┤         ↑                ↓
 2. **HER LEAD DEGER. TEK BIR LEAD BILE KACIRMAK YOK.**
 3. **TAKIP AGENT DURMAZ. YANIT GELENE KADAR KOVALAR.**
 4. **ITIRAZ = FIRSAT. HER ITIRAZ BIR SATIS FIRSATIDIR.**
-5. **AIRTABLE = TEK GERCEK. ORADA OLMAYAN LEAD YOK DEMEKTIR.**
+5. **NOCODB = TEK GERCEK. ORADA OLMAYAN LEAD YOK DEMEKTIR.**
 6. **SEYMA SADECE KAPANIS YAPAR. GERISI AGENTLARIN ISI.**
