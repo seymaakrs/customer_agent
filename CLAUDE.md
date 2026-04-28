@@ -32,6 +32,33 @@
 - [x] **Facebook hesap gecisi:** Selahattin -> Seyma. Tum yetkiler kullanicida (Seyma), kimseden onay gerekmiyor.
 - [x] AGENT-MIMARISI-MASTER.md: 6 agent + 8 workflow + NocoDB tablo sablonlari (PR #1 draft'da Airtable->NocoDB guncellemesi bekliyor)
 
+## Hizli Erisim Bilgileri
+
+### n8n
+- **URL:** https://mindidai.app.n8n.cloud/  (n8n Cloud)
+- **Webhook base:** https://mindidai.app.n8n.cloud/webhook
+- **API base:** https://mindidai.app.n8n.cloud/api/v1
+- **API auth header:** `X-N8N-API-KEY: <token>`
+
+### n8n API Token Nasil Alinir (kullaniciya rehber)
+1. https://mindidai.app.n8n.cloud/ -> giris yap
+2. Sol alt: kullanici avatari (initials) -> **Settings**
+3. Sol menude **n8n API** sekmesi
+4. **Create an API key** butonu
+5. Label: ornek "claude-code"
+6. Expiration: 7 gun veya 30 gun (gecici icin)
+7. **Save** -> Token bir kez gosterilir, HEMEN KOPYALA (formati: `n8n_api_xxxxx...`)
+8. Bu token .env'de tutulur, ASLA commit edilmez. Kullanim bitince Settings'ten sil.
+
+### Production sunucu
+- Google Cloud VM (detayli adres kullanicida)
+- SSH erisimi var (kullanicida)
+- VM'de calisanlar: NocoDB (ve muhtemelen mind-agent docker)
+
+### NocoDB
+- Tablolar aktif: `leads`, `lead_messages`, `seyma_notifications` (semasi master doc'ta)
+- API token + URL kullanicida
+
 ## Mevcut Durak Noktasi
 **Meta Ads Agent workflow'unda kalindi** (n8n'de). Devam etmek icin kullanici hazir.
 
