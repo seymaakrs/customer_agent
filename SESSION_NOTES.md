@@ -4,6 +4,34 @@
 
 ---
 
+## Session 3 — 2026-04-28 (n8n envanter cikartildi)
+
+### n8n API ile Workflow Listesi Cekildi
+
+Kullanici PowerShell ile n8n REST API'ye baglandi (sandbox -> n8n bloklu, kullanici aracilik etti).
+Tam liste CLAUDE.md'deki "n8n Workflow Envanteri" bolumunde.
+
+**Aktif olan sales/CRM agent'lari:** Lead Toplama, Takip, Itiraz, Upsell, Referans, Musteri Mail Otomasyonu
+**Pasif:** Meta Lead Ads Agent (yapisi dogru, sadece activate edilmemis), Facebook Lead Ads Performance Tracker
+**Yok:** LinkedIn outreach, Clay yerel arama, IG DM bot
+
+### Meta Lead Ads Agent - Detayli Yapi (5 node)
+
+```
+Facebook Lead Ads -> Map Fields and Score -> Save to NocoDB -> Is Hot Lead (IF) -> Alert Seyma (Gmail)
+```
+
+Yapi dogru, sadece pasif. Aktive etmeden once node parametrelerini (credential, page/form id, field mapping)
+detayli incelemek lazim.
+
+### Onaylanmis Calisma Modu
+
+Sandbox <-> n8n erisimi olmadigi icin: **Ben komut/JSON yaziyorum, kullanici PowerShell'de calistirip
+ciktiyi yapistiriyor.** Bu yontemle workflow'lari ben kuracagim/duzenleyecegim, kullanici sadece
+"Enter" tusuna basacak.
+
+---
+
 ## Session 3 — 2026-04-28 (kullanici brief)
 
 ### Kullanicidan Gelen Guncel Durum Bilgisi
