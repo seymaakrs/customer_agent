@@ -4,7 +4,7 @@
 
 ---
 
-## Session 2 — 2026-04-28 (devam ediyor)
+## Session 2 — 2026-04-28
 
 ### Yapilanlar (customer_agent)
 - `AGENT-MIMARISI-MASTER.md` Airtable -> NocoDB gecisi yapildi
@@ -25,29 +25,31 @@
 - `src/agents/orchestrator_agent.py` — Meta agent orchestrator tools listesinde
 - `src/agents/registry.py` — `create_meta` + registry kaydi
 - `src/agents/instructions/orchestrator.py` — meta_agent_tool routing keyword'leri eklendi
-- Tests: `tests/test_nocodb_client.py`, `tests/test_meta_agent.py`
+- Tests: `tests/test_nocodb_client.py`, `tests/test_meta_agent.py` — **13/13 PASSED**
+- mind-agent PR #5 (draft): https://github.com/seymaakrs/mind-agent/pull/5
 
-### Konusulan / Ogrenilen
-- Kullanici NocoDB'yi kurdu, kullanima hazir
-- Facebook hesap degisimi yapildi ama n8n hala calisiyor (Selahattin'in user token'i sayfa admin yetkisini koruyor)
-- Kullanici acil olarak Facebook credential yenilemesi istemiyor — ilerlemek istiyor
-- **Yeni hedef:** 6 agent'i mind-agent SDK sistemine entegre etmek
+### KARAR (Session 2 sonu)
 
-### Bekleyen Aksiyonlar (oncelik sirasi)
-1. **mind-agent entegrasyon plani:** 6 agent (LinkedIn, Meta, Clay, IG DM, Takip, Itiraz) mind-agent SDK'da nasil yapilanacak?
-   - Her agent icin: `src/agents/instructions/` altinda instruction dosyasi
-   - Her agent icin: `src/tools/` altinda tool seti
-   - `src/agents/registry.py`'de kayit
-   - Orchestrator'a yeni keyword'ler
-2. **NocoDB client:** `src/infra/nocodb_client.py` (REST API wrapper)
-3. **Yeni tools:** `nocodb_tools.py` (create_lead, update_lead, get_leads, log_message)
-4. **Webhook entegrasyon:** n8n -> mind-agent /task endpoint baglantisi
-5. **Mind-id UI:** Yeni agent'lari tetikleyen panel
+**Kullanici onay almadan yapilan radikal degisikliklere itiraz etti.** Mind-agent
+icin kural: HER ZAMAN ONAY AL, ASLA radikal degisiklik yapma, geri donulebilir
+olmali.
+
+**Mevcut durum:**
+- mind-agent main: DOKUNULMADI. Tum kod degisiklikleri PR #5 draft'inda branch'te bekliyor.
+- customer_agent main: SADECE bu hafiza dosyalari (CLAUDE.md + SESSION_NOTES.md) merge edilecek.
+- AGENT-MIMARISI-MASTER.md degisiklikleri (Airtable->NocoDB, FB hesap notu) PR #1 draft'inda branch'te bekliyor — kullanici karari icin.
+- mind-id: HIC dokunulmadi.
+
+**Branch:** `claude/check-facebook-meta-ads-KM4MZ` (her iki repoda)
+- Istenirse merge edilir, istenirse silinir. Karar kullaniciya ait.
 
 ### Sonraki Session Icin Notlar
-- Once "Meta Agent" tek basina end-to-end calistirilmali (en hazir olani)
-- Diger agent'lar bunu sablon alarak eklenir
-- LinkedIn agent icin Apollo/PhantomBuster gibi 3rd party gerekli mi sorulmali
+- BU DOSYAYI ve `CLAUDE.md`'yi OKU, baslamadan once kullanicinin sana onceki
+  konusmalardan ne hatirlamani bekledigini gorursun.
+- ONAY ALMADAN KOD DEGISTIRME. Once plan sun, sor, sonra yap.
+- mind-agent main'i el degmedi. Eger kullanici "Meta agent'i tamamla"
+  derse PR #5'i incele, branch'i kullan, main'e bos yere bir sey gondermeden once SOR.
+- Eger kullanici master doc guncellemelerini de istiyorsa PR #1'i merge et.
 
 ---
 
