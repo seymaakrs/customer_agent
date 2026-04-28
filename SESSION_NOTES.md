@@ -4,6 +4,38 @@
 
 ---
 
+## Session 3 — 2026-04-28 (kullanici brief)
+
+### Kullanicidan Gelen Guncel Durum Bilgisi
+
+**Hazir / Aktif:**
+- ✅ NocoDB **aktif**, tablolar olustu, n8n yaziyor
+- ✅ **Cogu agent kuruldu** ve NocoDB'ye lead yaziyor (n8n workflow olarak)
+- ✅ **Seyma'ya mail bildirim aktif** — n8n'den mail gidiyor
+- ✅ **Production sunucu: Google Cloud VM** — n8n bu VM'de calisiyor
+- ✅ SSH ile test verisi gonderiliyor (test akisi calisiyor)
+- ✅ **Facebook hesap gecisi tamam:** Selahattin -> Seyma. Kullanicinin tum yetkileri var, kimseden onay almasi gerekmiyor
+
+**Mevcut Tikanma:**
+- 🚧 **Meta Ads agent workflow'u** — n8n'de bu agent'ta kalindi. FB hesap geçişi ile ilgili duraksama vardi, simdi devam etmek istiyor
+
+**Buyuk Hedef Sirasi:**
+1. **Once:** n8n mimarisini tamamla — eksik agent'lari bitir, tum workflow'lari calisir hale getir
+2. **Sonra:** n8n'deki sistemi mind-agent SDK icine al (kod tarafina)
+
+### Kural — kullanici acik soyledi
+- Mind-agent ASLA bozulmamali
+- HER ZAMAN geri donulebilir olmali
+- Onay almadan radikal degisiklik YASAK
+- Her seyi sormaya gerek yok — sadece projeye ait belirsizlik varsa sor (yetki sorma, kullanicinin var)
+
+### Bekleyen Aksiyonlar
+1. **Meta Ads workflow tamamla** (n8n) — kullanici devam etmek istiyor, neyin eksik oldugu netlessin
+2. Diger agent workflow'larin durumu — hangileri tamamlandi, hangileri yarim?
+3. Mimari tamamlandiktan SONRA mind-agent gecisi planlanacak
+
+---
+
 ## Session 2 — 2026-04-28
 
 ### Yapilanlar (customer_agent)
