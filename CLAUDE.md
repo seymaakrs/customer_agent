@@ -89,3 +89,71 @@ mind-id/             Next.js admin paneli (UI ve n8n proxy)
 5. **Belirsiz bir sey varsa:** VARSAYIM YAPMA, kullaniciya sor.
 6. **Kullaniciya soracagin sey hakkinda:** Sadece projeye ait bilgi sor. Yetki, hesap, sifre vb. icin sorma — kullanicinin tum yetkileri var.
 7. Kullanici yeni mezun bir yazilim muhendisi gibi davranir — kavramlari acikla, surece dahil et.
+
+## n8n Workflow Envanteri (Session 3 — 2026-04-28)
+
+> Tam liste API'den cekildi. Ana hatlariyla.
+
+### Sales/CRM Akisinda Olanlar (master mimari ile eslesme)
+
+| Master Agent | n8n Workflow Adi | ID | Aktif | Not |
+|---|---|---|---|---|
+| LinkedIn Agent | (Yok — `Lead Toplama Agent` generic webhook olabilir) | l31p16NRZeyk4eEm | ✅ | Webhook trigger |
+| **Meta Reklam** | **Meta Lead Ads Agent** | xblguxS49CJ4r4OF | ❌ | **Burada tikandik** |
+| Clay Agent | Yok | — | — | Henuz kurulmadi |
+| IG DM Agent | Yok (instagram_* var ama content uretimi icin) | — | — | Henuz kurulmadi |
+| Takip Agent | Takip Agent | nWNMQYHJzsMvMUGP | ✅ | Calisiyor |
+| Itiraz Agent | Itiraz Agent | 9nTdKNPLCjo8DKfE | ✅ | Calisiyor |
+| Upsell (ekstra) | Upsell Agent | kVXXr4e6O5F3lGiD | ✅ | |
+| Referans (ekstra) | Referans Agent | 28hnN6OrH5TF9NX2 | ✅ | |
+
+### Diger Onemliler
+
+| Workflow | ID | Aktif | Rol |
+|---|---|---|---|
+| Musteri Mail Otomasyonu (Claude Trigger) | faolAyTcoUJIBcal | ✅ | Webhook -> Splitout -> Personalize -> Gmail |
+| Facebook Lead Ads Performance Tracker | 47pTxyFQPaQxEWxU | ❌ | CTR/CPC izleme (henuz aktif degil) |
+| Gunluk Rapor | z80cGhIcVrKSnIAy | ✅ | |
+| Haftalik Rapor | 71xugM3hTqDZiIUx | ✅ | |
+| Airtable CRM Setup | zI7CyXdyHmxX9mF0 | ❌ | Eski Airtable kalintisi, silinebilir |
+| NocoDB Test | rNpzfRmdNLnOwXBR | ❌ | Test, silinebilir |
+
+### Meta Lead Ads Agent (xblguxS49CJ4r4OF) — DURAK NOKTASI
+
+**Yapi (5 node, hepsi enabled, ama workflow disable):**
+1. `Facebook Lead Ads` — n8n-nodes-base.facebookLeadAdsTrigger
+2. `Map Fields and Score` — code (lead skor hesabi)
+3. `Save to NocoDB` — n8n-nodes-base.nocoDb
+4. `Is Hot Lead` — IF
+5. `Alert Seyma` — Gmail (sicaksa Seyma'ya bildirim)
+
+**Bu yapi tam istenildigi gibi.** Pasif olmasinin muhtemel sebepleri:
+- Facebook Lead Ads credential eski Selahattin hesabinda, yeni hesap (Seyma) icin guncellenmedi
+- Form/page secimi degisti (Slowdays Bodrum -> Slowdays Dijital Paketler)
+- Bilerek pasif birakildi, simdi aktive edilebilir
+
+**Yeni session'da bu sirayla ilerle:**
+1. PowerShell ile node parametrelerini detayli cek (credential id, page id, form id, NocoDB field mapping, Gmail to-address)
+2. FB credential'i yeni hesapla yenile (gerekirse)
+3. Workflow'u activate et (PATCH /workflows/{id} ile active=true)
+4. Test lead at, NocoDB'ye dustugunu ve Seyma'ya mail gittigini dogrula
+
+### Lead Toplama Agent (l31p16NRZeyk4eEm) — Generic Webhook
+
+5 node: Webhook -> Calculate Lead Score -> Create Lead in NocoDB -> Is Hot or Warm -> Send Hot Lead Alert (Gmail)
+- Bu generic — herhangi bir kaynaktan webhook alir, lead'i NocoDB'ye yazar.
+- LinkedIn agent ayri kurulmadiysa burasi LinkedIn icin de kullaniliyor olabilir.
+- Master mimaride kaynak field'i set edilmeli (Meta/LinkedIn/Clay/IG DM)
+
+### Musteri Mail Otomasyonu (faolAyTcoUJIBcal)
+
+4 node: Webhook -> Alicilari Ayir (splitout) -> Kisisellestir (code) -> Gmail
+- "Claude Trigger" adinda — yani LLM'den gelen mesaj ile tetikleniyor
+- Birden fazla aliciya kisisellestirilmis mail atiyor
+
+## Bilinen Eksiklikler
+
+- LinkedIn outreach workflow yok (master mimaride var)
+- Clay yerel arama workflow yok
+- IG DM bot workflow yok
+- Meta Lead Ads Agent pasif
