@@ -157,3 +157,75 @@ mind-id/             Next.js admin paneli (UI ve n8n proxy)
 - Clay yerel arama workflow yok
 - IG DM bot workflow yok
 - Meta Lead Ads Agent pasif
+
+## n8n Workflow Node Parametreleri (Session 3 — detayli envanter)
+
+### Credential ID'leri (kullanim icin)
+
+| Credential | ID | Aciklama |
+|---|---|---|
+| Facebook Lead Ads OAuth | `eu0Cazh3zO0houcS` | "Facebook Lead Ads account" — muhtemelen Selahattin'in eski tokeni, Seyma'ya gecirilecek |
+| NocoDB API Token | `LC3XeYkArk2TDsVH` | "NocoDB Token account 2" |
+| Gmail OAuth | `mVFOSbLiq27Ig3zg` | "Gmail account" — Seyma'nin gmail (seymaakrs@gmail.com) |
+
+### NocoDB Lokasyon Bilgileri
+
+| Alan | Deger |
+|---|---|
+| Workspace | `wgh5kblj` |
+| Project | `ps9dj2fqrh823av` |
+| Leads tablosu | `m5lcgc5ifeqh38h` (TUM lead workflow'lari buraya yaziyor — MERKEZI) |
+
+**Tablo Field'lari (cesitli workflow'lardan derlendi):**
+`ad_soyad`, `email`, `telefon`, `sirket_adi`, `sektor`, `konum`, `kaynak`, `asama`, `lead_skoru`, `ihtiyac_notu`
+
+**Sektor enum:** Otelcilik, Yeme-Icme, Perakende, Turizm, E-ticaret, Tekne-Yat, Emlak, Spa-Wellness, Doktor-Uzman, Koc-Egitmen, Kurumsal-Kamu, Butik-Moda, Kafe, Restoran, Diger
+**Asama enum:** Yeni, Ilik, Sicak, Soguk, Teklif, Kazanildi, Kayip
+**Kaynak enum:** Meta Ads, LinkedIn, Clay, IG DM, Manuel
+
+### Meta Lead Ads Agent Detay (xblguxS49CJ4r4OF)
+
+| Node | Tip | Onemli Parametreler |
+|---|---|---|
+| Facebook Lead Ads | facebookLeadAdsTrigger | page=`948197981703583` (Slowdays Bodrum), form=`1614597482989083` (Slowdays Dijital Paketler), simplifyOutput=true, credential=`eu0Cazh3zO0houcS` |
+| Map Fields and Score | code | Meta form fields parse + custom questions (sektor/hizmet/butce) + skor hesabi (base=25 Meta Ads + sektor + konum + butce) |
+| Save to NocoDB | nocoDb | workspace=wgh5kblj, project=ps9dj2fqrh823av, table=m5lcgc5ifeqh38h |
+| Is Hot Lead | if | asama==Sicak OR asama==Ilik |
+| Alert Seyma | gmail | to=seymaakrs@gmail.com, HTML body |
+
+**Skorlama kurali (Meta Lead Ads):**
+- Base 25 (Meta Ads form doldurdu)
+- Hedef sektor (Otelcilik/Yeme-Icme/Turizm/Spa-Wellness): +20, diger non-Diger: +10
+- Hedef konum (Bodrum/Marmaris/Fethiye/Datca/Gocek): +15
+- Butce 15.000 veya 30.000: +15, butce 5.000: +5
+- Asama: skor>=60 -> Sicak, >=40 -> Ilik, <40 -> Yeni
+
+### Lead Toplama Agent Detay (l31p16NRZeyk4eEm)
+
+Yapi: Webhook (path=`lead-toplama`) -> Calculate Score -> NocoDB -> IF -> Gmail
+- Generic webhook tabanli (kaynak input'ta gelir)
+- Skor: hedef sektor +20, hedef konum +15 (Mugla genel +10), kaynak (Meta Ads=+25, Clay/LinkedIn=+15, IG DM=+10, Manuel=+5), asama bonus
+- AYNI NocoDB tablosuna yaziyor (m5lcgc5ifeqh38h)
+- AYNI mail tetikleyicisi (asama Sicak/Ilik -> seymaakrs@gmail.com)
+
+### Musteri Mail Otomasyonu Detay (faolAyTcoUJIBcal)
+
+Yapi: Webhook (path=`musteri-mail-gonder`) -> SplitOut (body.recipients) -> Code (kisisellestir {{key}} replacement) -> Gmail
+- Webhook body: `{recipients: [...], subject, body, senderName}`
+- Birden fazla aliciya kisisellestirilmis mail
+- LLM tetikleyici (Claude Trigger adli)
+
+## Hangi Workflow Hangi Lead Tipi Icin?
+
+Tum 6 master agent (LinkedIn, Meta, Clay, IG DM, Takip, Itiraz) icin:
+
+| Master Agent | n8n karsiligi | Calisma sekli |
+|---|---|---|
+| LinkedIn | Lead Toplama Agent (webhook ile) | LinkedIn extractor disardan webhook atar |
+| Meta | Meta Lead Ads Agent | FB form doldurulunca otomatik tetiklenir |
+| Clay | Lead Toplama Agent (webhook ile) | Clay export -> webhook |
+| IG DM | YOK (kurulmali) | — |
+| Takip | Takip Agent (ayri workflow) | NocoDB scan + sure hesabi |
+| Itiraz | Itiraz Agent (ayri workflow) | Mesaj icerigi tetikler |
+
+**Onemli:** Meta haricindeki "av" kanallari Lead Toplama Agent'in webhook'u uzerinden NocoDB'ye yaziyor. Yani master mimari'deki "her agent ayri" yerine n8n'de "1 generic webhook + 1 ozel Meta trigger" yaklasimi tercih edilmis.

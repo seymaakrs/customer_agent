@@ -4,6 +4,47 @@
 
 ---
 
+## Session 3 — 2026-04-28 (n8n node parametreleri detayli)
+
+### Calisilan workflow'lar - Detaylar
+
+PowerShell ile tum node parametreleri cekildi. Detaylar CLAUDE.md'deki
+"n8n Workflow Node Parametreleri" bolumune islendi.
+
+**Onemli kesifler:**
+1. Meta Lead Ads ve Lead Toplama AYNI NocoDB tablosuna yaziyor (m5lcgc5ifeqh38h)
+2. Iki workflow'da da skorlama mantigi paralel ama farkli formuller var
+3. Tum sicak/ilik leadler seymaakrs@gmail.com'a HTML mail ile gidiyor
+4. Mail Otomasyon (Claude Trigger) ayri webhook (LLM tetikleyici)
+5. Master mimari'deki "her agent ayri n8n workflow" yerine yapilan: "1 ozel Meta trigger + 1 generic webhook (Lead Toplama)"
+   - LinkedIn/Clay/IG DM Lead Toplama webhook'una post etmeli
+   - Meta direkt FB trigger ile geliyor
+
+### Meta Lead Ads Aktif Etme Plani
+
+1. ✅ Yapi dogru, sadece pasif
+2. 🚧 Kullanici **Facebook credential reconnect** yapiyor (Selahattin -> Seyma)
+   - Ya mevcut credential'i (eu0Cazh3zO0houcS) override ediyor
+   - Ya da yeni credential olusturuyor (oneri: temiz olur)
+3. ⏳ Reconnect bitince ben PowerShell aktive komutu verecegim:
+   ```powershell
+   Invoke-RestMethod -Uri "https://mindidai.app.n8n.cloud/api/v1/workflows/xblguxS49CJ4r4OF/activate" -Method POST -Headers $headers
+   ```
+4. ⏳ Test lead: https://developers.facebook.com/tools/lead-ads-testing/
+
+### Calisma Modu (Kalici Hatirlatma)
+
+- **Sandbox <-> n8n erisim YOK** (Anthropic egress kisitlamasi)
+- **Token sahip:** Kullanici, paylasildi ama sandbox'tan 403 doner
+- **Yontem:** Claude komut/JSON yazar -> Kullanici PowerShell'de calistirir -> Cikti yapistirilir
+- **PowerShell template:** Her komutun basina:
+  ```powershell
+  $TOKEN = '<token>'
+  $headers = @{ 'X-N8N-API-KEY' = $TOKEN }
+  ```
+
+---
+
 ## Session 3 — 2026-04-28 (n8n envanter cikartildi)
 
 ### n8n API ile Workflow Listesi Cekildi
