@@ -8,6 +8,12 @@
 **Mimari:** 6 agent paralel calisir (LinkedIn, Meta, Clay, IG DM, Takip, Itiraz) → NocoDB CRM → Seyma kapanis yapar
 **Detay:** `AGENT-MIMARISI-MASTER.md`
 
+## Detay/Master Dokümanlar
+
+- `AGENT-MIMARISI-MASTER.md` → 6 agent + 8 workflow + NocoDB tablo şablonları (mimari)
+- `ZERNIO-AGENT-SPEC.md` → **Şeyma'nın Claude Console'da kurduğu agent spec'i** (rol matrisi, otonom karar kuralları, raporlama formatı, itiraz şablonları). **Tüm yeni agent'lar bu spec'e göre kurulacak.**
+- `SESSION_NOTES.md` → Session bazlı kalıcı notlar
+
 ## Karar Verilmis Olan Seyler (DEGISMEZ)
 
 | Konu | Karar |
@@ -59,8 +65,24 @@
 - Tablolar aktif: `leads`, `lead_messages`, `seyma_notifications` (semasi master doc'ta)
 - API token + URL kullanicida
 
-## Mevcut Durak Noktasi
-**Meta Ads Agent workflow'unda kalindi** (n8n'de). Devam etmek icin kullanici hazir.
+## Mevcut Durak Noktasi (Session 5 — 2026-04-30 sonu)
+
+**STRATEJIK KARARLAR (kullanici onayli):**
+1. Meta Lead Ads agent **PAUSED** -- FB App Development modunda, manuel CSV import ile devam
+2. **Zernio kesfedildi** -- 15 platform tek API. Kullanici 3 paket aldi (Analitik aktif, Inbox/Reklamlar eklenecek). IG DM/LinkedIn/FB DM Zernio uzerinden tek webhook
+3. **Revize plan** (5 faz, ~2 hafta): Clay -> Zernio entegrasyonu -> IG DM+LinkedIn -> Daily Reporter -> mind-id Sales Dashboard
+
+**Final hedef:** Seyma mind-id dashboard'da chat'le "kac sicak lead var?" diye sorar, mind-agent NocoDB'den ceker, dogal dilde cevaplar.
+
+**Detaylar:** `SESSION_NOTES.md` Session 5 ve `ZERNIO-AGENT-SPEC.md` (Seyma'nin master agent spec'i)
+
+**Kullanicidan bekleyen 3 soru:**
+1. Zernio Inbox paketini ekleyelim mi? ($10/mo)
+2. Meta Lead Ads'i Zernio ile test edelim mi?
+3. Faz sirasi: Once Clay (A) mi, once Zernio (B) mi? **Onerim B**
+
+**KORU (silmeyin):** Meta Lead Ads workflow (xblguxS49CJ4r4OF) PAUSED, App Review sonrasi aktive edilecek
+**DOKUNMA:** mind-agent main
 
 ## Buyuk Hedef Sirasi
 1. **Once mimariyi tamamla** — n8n'deki tum agent workflow'lari calisir hale getir (mevcut hedef)

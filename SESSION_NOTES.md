@@ -4,6 +4,210 @@
 
 ---
 
+# Session Notes - Customer Agent
+
+> En yeni session en ustte. Her session sonunda buraya yazilan notlar kalici hafiza olarak kullanilir.
+
+---
+
+## Session 5 — 2026-04-30 (Zernio kesfi + revize plan, Meta park edildi)
+
+### TL;DR (yeni session bunu oku, kullaniciya anlatmasin)
+
+Kullanici yeni session acti cunku oncekinde API error aldi. CLAUDE.md ve SESSION_NOTES.md okundu, devam edildi. Bugun:
+1. Meta Lead Ads webhook kapsamli debug edildi -> kanitlandi ki **App Development modunda oldugu icin** webhook teslim olmuyor
+2. Stratejik karar: **Meta agent PARK** (App Review icin demo+privacy hazirlamak su an verimsiz; Seyma haftalik manuel CSV import)
+3. Kullanici Seyma'nin Claude Console'da kurdugu **Zernio agent spec'ini** paylasti -> `ZERNIO-AGENT-SPEC.md` olarak kaydedildi
+4. Kullanici "Zernio'da 3 paket aldigimizi" gosterdi (Analitik, Gelen Kutusu, Reklamlar -- her biri $10/mo)
+5. Zernio arastirildi -> **15 platform tek API**, n8n native node var, IG/LinkedIn/FB DM webhook destegi, Meta+LinkedIn+TikTok ads API
+6. Plan revize edildi: Apollo + IG Graph API + LinkedIn API ayri ayri kurmak yerine **Zernio tek noktadan**
+7. **3 soru kullanicidan bekliyor** (asagida)
+
+### Bu Session'da Tamamlanan Diagnostik (Meta Lead Ads)
+
+Tum altyapi DOGRU kuruldu, sorun App publish durumu:
+- ✅ Workflow `xblguxS49CJ4r4OF` 5 node, hepsi yesil tikli, Published
+- ✅ FB Lead Ads credential connected (Client ID 1582227782846873)
+- ✅ App Secret yenilendi: `af4cb94b90e4789ef6bdeafd826b06db` (n8n credential'a paste edildi)
+- ✅ OAuth reconnect yapildi
+- ✅ Page-App subscription Graph API ile dogrulandi:
+  - `GET /me/accounts` -> Page ID: `948197981703583` (Slowdays Bodrum)
+  - `GET /948197981703583/subscribed_apps` -> Slowdays Lead Integration listede, leadgen subscribed
+- ✅ FB App webhook config: callback URL = `https://mindidai.app.n8n.cloud/webhook/2a3403b2-f405-4ef5-b640-317747ecb6fd/webhook`, leadgen subscribed
+- ❌ App "Unpublished" (Development mode) -> production data teslim edilmiyor
+- 🔍 Iki FB App tespit edildi: Slowdays Lead Integration (kullanilan) ve "n8n" (1865681887495088, bos kabuk -- yoksay)
+- 🔍 App contact email Selahattin'in (selehattinkoc@gmail.com) -- temizlik amacli sonra guncellenebilir, kritik degil
+
+### Zernio Bulgusu (KRITIK)
+
+**Zernio = 15 platform icin tek API** (Instagram, TikTok, X, Facebook, LinkedIn, YouTube, WhatsApp, Threads, Pinterest, Reddit, Bluesky, Telegram, Google Business, Snapchat, Discord)
+
+**Kullanicinin paketleri:**
+| Paket | Fiyat | Durum |
+|---|---|---|
+| Analitik | $10/mo | ✅ 7 gun deneme aktif |
+| Gelen Kutusu (Inbox) | $10/mo | ⏸️ Eklenmemis (eklenecek) |
+| Reklamlar (Ads) | $10/mo | ⏸️ Eklenmemis (Faz D'de eklenir) |
+
+**Plana etkisi:**
+- IG DM Agent: Apollo + IG Graph API yerine Zernio Inbox webhook (App Review YOK)
+- LinkedIn Agent: LinkedIn cookie cekme/Phantombuster yerine Zernio LinkedIn DM API
+- Daily Reporter: Meta + IG + LinkedIn Insights ayri ayri yerine Zernio Analytics tek API
+- Meta Lead Ads (PARK): Zernio'nun kendi Meta App'i Lead Ads cekiyorsa App Review beklemeden cozulebilir -- TEST EDILMEDI henuz, kullanici onayi bekleniyor
+
+**Maliyet:** Aylik ~$60 (Apollo + Phantombuster) -> $30 (Zernio 3 add-on) = yari fiyat
+**Sure:** 3 hafta -> 2 hafta (entegrasyonlar tek API uzerinden)
+
+### Revize Edilmis Plan (Kullanici Onayi Bekleyen)
+
+```
+Faz A — Clay Agent (yerel arama Bodrum/Mugla)              4-5 gun
+Faz B — Zernio entegrasyonu (n8n native node + Inbox)       2-3 gun
+Faz C — IG DM + LinkedIn Agent (Zernio Inbox webhook)       3-4 gun
+Faz D — Daily Reporter + Reklamlar API otonom karar         2 gun
+Faz E — mind-agent + mind-id Sales Dashboard                5-7 gun
+```
+
+**Faz E hedefi:** Seyma "kac sicak lead var?" diye sorar -> mind-agent NocoDB'den ceker -> dogal dilde cevap (mind-id dashboard'da chat arayuzu)
+
+### Kullanicidan Bekleyen 3 Soru (Session 6'da Sor)
+
+1. **Zernio "Gelen Kutusu" paketini ekleyelim mi?** ($10/mo, Faz B/C icin zorunlu)
+2. **Meta Lead Ads'i Zernio ile test edelim mi?** (yarim saat, App Review beklemesini iptal edebilir)
+3. **Faz sirasi:** Once Clay (A) mi, once Zernio entegrasyonu (B) mu? **Onerim B** -- Zernio kurulur kurulmaz 3 kanaldan lead gelir.
+
+### Korunacak (DOKUNMA, KURAL)
+
+- Meta Lead Ads workflow (xblguxS49CJ4r4OF) PAUSED, silmeyin -- App Review onayinda direkt aktive edilecek
+- mind-agent main -- DOKUNULMUYOR
+- Mevcut 5 calisan agent: Lead Toplama, Takip, Itiraz, Upsell, Referans, Mail Otomasyonu
+
+### Eklenen Master Doc
+
+`customer_agent/ZERNIO-AGENT-SPEC.md` -- Seyma'nin Claude Console'da kurdugu agent mimarisi:
+- C-Suite roller: CGO, CAIDO, CBO
+- Otonom karar kurallari (CTR<%1 -> durdur, CPL>50 -> dondur, lead score 8+ -> Seyma'ya 2 dk icinde bildir)
+- Gunluk rapor formati (23:00 cron)
+- Itiraz sablonlari (pahali/dusunecegim/baska teklif)
+- Yasakli ifadeler (CBO standardi: spam YOK, baski taktigi YOK)
+
+### Kullanici Durumu (Onemli Not)
+
+- Saatlerce Meta debug yapildi, kullanici cok yoruldu/bunaldi -- Session 6'da OZEN GOSTER
+- Hizli sonuc istiyor, hata istemiyor, plan netligi istiyor
+- Anydesk'ten Seyma'nin hesabindan calisiyordu -> kendi PC'sine gecmek istedi (henuz yapilmadi, FB davet adimi anlatildi ama yapilmadi)
+
+### Bir Sonraki Session — Net Akis
+
+1. **Selam ver, "kaldigimiz yer" diye sor** (kullanici tekrar anlatmasin diye bu dosyayi oku)
+2. **3 soruyu hatirla**, kullaniciya sun
+3. Cevaplara gore Faz A veya Faz B baslat
+4. **mind-agent main'e DOKUNMA**
+5. Her buyuk adimda ONAY al
+6. Session sonunda bu dosyayi tekrar guncelle
+
+---
+
+## Session 4 — 2026-04-29 (Meta Lead Ads webhook debug — App Review'da takildi)
+
+### Kullanici Durumu
+- Kullanici cok bunalmis, saatlerdir ayni sorunda kalmis (Meta Agent calismiyor)
+- Anydesk uzerinden Seyma'nin hesabindan calisiyordu, ardindan kendi PC'sinde devam etti
+
+### Meta Lead Ads Workflow Detayli Inceleme (n8n: xblguxS49CJ4r4OF)
+
+**Tum altyapi DOGRU kuruldu, sorun App publish durumu:**
+
+| Komponent | Durum | Detay |
+|---|---|---|
+| Workflow yapisi | ✅ | 5 node: FB Lead Ads → Map Fields → NocoDB → Is Hot → Alert Seyma |
+| Workflow durumu | ✅ Published | n8n'de aktif, dinliyor |
+| FB Lead Ads credential | ✅ Account connected | Client ID: 1582227782846873 (Slowdays Lead Integration) |
+| Page secimi | ✅ | Slowdays Bodrum (ID: 948197981703583) |
+| Form secimi | ✅ | Slowdays Dijital Paketler |
+| App Secret n8n credential | ✅ Guncellendi | af4cb94b90e4789ef6bdeafd826b06db (Session 4'te elle paste edildi) |
+| FB App webhook config | ✅ | Callback URL: n8n production URL, leadgen subscribed |
+| Page-App subscription | ✅ DOGRULANDI | Graph API ile kontrol: leadgen subscribed |
+| NocoDB credential | ✅ Yesil tikli | n8n'de calisir durumda |
+| Gmail credential | ✅ Yesil tikli | Alert Seyma node'u calisir |
+
+**n8n Production Webhook URL:**
+`https://mindidai.app.n8n.cloud/webhook/2a3403b2-f405-4ef5-b640-317747ecb6fd/webhook`
+
+### KOK SORUN: FB App Development Modunda
+
+**Slowdays Lead Integration (App ID: 1582227782846873) "Unpublished/Development" modunda.**
+
+FB Webhooks sayfasinda kirmizi uyari:
+> "Apps will only be able to receive test webhooks sent from the dashboard while the app is unpublished. No production data, including from app admins, developers or testers, will be delivered unless the app has been published."
+
+- Lead Ads Testing Tool'dan gonderilen test lead -> sonsuz "Pending" -> n8n'e ulasmiyor
+- FB Webhooks sayfasindaki "Test" butonu -> n8n executions bos
+- Webhook altyapisi tam, sadece App Live mode'a alinmamis
+
+### Yapilan Tum Diagnostik Adimlar
+
+1. ✅ Lead Ads Testing Tool'da Page Diagnostics yesil (Lead Permission, Lead Access Manager, Page Admin)
+2. ✅ Page Lead Access ayarlarinda "Slowdays Lead Integration" CRM listede gorundu
+3. ✅ Webhook config'de Page > leadgen subscribed (Callback URL n8n)
+4. ✅ Verify and save butonu gri (zaten dogrulanmis)
+5. ✅ App Secret yenilendi, n8n credential update edildi, OAuth reconnect yapildi
+6. ✅ Workflow unpublish/republish yapildi
+7. ✅ Graph API ile Page subscription dogrulandi: `948197981703583/subscribed_apps` -> Slowdays Lead Integration listede, leadgen var
+8. ❌ Tum dogru yapilandirmaya ragmen webhook gelmiyor — App publish gerekli
+
+### Diger Bulgular
+
+- **2 FB App var:** "Slowdays Lead Integration" (kullanilan, 1582227782846873) ve "n8n" (1865681887495088 — bos kabuk, hicbir sey yapilandirilmamis)
+- **App contact email hala selehattinkoc@gmail.com** — Selahattin ait, bizim sorunumuz icin etkisiz ama temizlik amacli sonra guncellenebilir
+- **Permissions durumu:** ads_management, ads_read, business_management, leads_retrieval hepsi "Ready for testing" — yani dev mode'da admin kullanabilir AMA Live icin App Review gerekli
+- **Yayin sayfasi 2 eksik gosteriyor:**
+  1. Privacy Policy URL (bos)
+  2. Capture & manage ad leads with Marketing API use case (App Review gerekli olabilir)
+
+### Bir Sonraki Session — Net Plan (GUNCELLENDI 2026-04-29 sonu)
+
+**Stratejik karar (kullanici):** Meta agent'i park et, eksik 3 agent'i kur (Clay, LinkedIn, IG DM).
+
+Sebep: Meta App Review icin demo video + privacy policy hazirligi su an verimsiz. Seyma haftalik manuel CSV import yapacak. Lead hacmi 50/hafta'yi gectiginde App Review'a basvurulacak (3-4 hafta sonra).
+
+**Yeni Yol Haritasi:**
+
+```
+Hafta 1 (su an)   -> Clay Agent (yerel arama + cold mail) ⭐ EN COK BIRAK GETIRIR
+Hafta 2           -> LinkedIn Agent (Apollo + LinkedIn outreach)
+Hafta 3           -> IG DM Agent (Instagram Direct Message bot)
+Hafta 4           -> Meta App Review basvurusu (lead hacmi oturduktan sonra)
+2 ay              -> Mind-agent gecisi (n8n -> Python SDK)
+```
+
+**Korunacak (DOKUNMA):**
+- Meta Lead Ads workflow (xblguxS49CJ4r4OF) - paused, silmeyin
+- mind-agent main - dokunulmuyor (kural)
+- Mevcut 5 calisan agent (Lead Toplama, Takip, Itiraz, Upsell, Referans, Mail Otomasyonu)
+
+### Onemli Karar — Workflow YENIDEN KURMA
+
+**Kullanici sordu:** "Bu workflow'u silip bastan temiz mi kursak?"
+
+**Cevap:** HAYIR. Sebepleri:
+- Mevcut workflow yapisi tam dogru (5 node, hepsi yesil tikli)
+- Sorun workflow'da degil, FB App publish durumunda
+- Yeniden kurmak ayni sorunu cozmez (App Review yine gerekli)
+- Ek olarak: NocoDB field mapping, Gmail template gibi detaylar yeniden ayarlanmasi gerekir
+
+**Mevcut workflow'u koru.** Tek ihtiyac App Review.
+
+### Kullaniciya Notlar
+
+- Saatlerdir ayni sorunda kalindi, kullanici cok yoruldu
+- App Review beklenmesi gerekecek bu gece bitirme imkani yok
+- Yarin Privacy Policy + App Review basvurusu birlikte 1 saatte halledilebilir
+- mind-agent'a ASLA dokunulmadi (kuralina uyuldu)
+- Bu session'da hicbir kod degisikligi yapilmadi, sadece config ve diagnostics
+
+---
+
 ## Session 3 — 2026-04-28 (n8n envanter cikartildi)
 
 ### n8n API ile Workflow Listesi Cekildi
