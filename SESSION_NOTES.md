@@ -10,6 +10,80 @@
 
 ---
 
+## Session 6 — 2026-04-30 (Kirmizi bolge implementasyonu — 9 faz tamamlandi)
+
+### TL;DR
+
+Kullanici Zernio agent spec'i + diagrami paylasti, "kirmizi bolgeyi tamamla,
+veritabanini bozma, eslesmeleri dogru yap, branch'te calis, onay almadan
+merge etme" dedi. 9 faz halinde tum sales sub-agent ekosistemi kuruldu.
+
+### Faz-by-Faz
+
+| Faz | Icerik | Test |
+|---|---|---|
+| 0 | Branch + smoke test | 87/87 (mevcut testler) |
+| 1 | NocoDB + Zernio clients + 8 Pydantic model + 17 env | 46/46 yeni |
+| 2 | sales_query_agent (read-only NL) + 14 tool | 8/8 |
+| 3 | clay_agent + 3 tool (discover, score, outreach) | 20/20 |
+| 4 | ig_dm_agent + Zernio Inbox tool'lari | smoke |
+| 5 | linkedin_agent | smoke |
+| 6 | meta_lead_agent (PARK + autonomous ads) | smoke |
+| 6.5 | 5 wrapper + orchestrator gate (sales_agents_enabled) | 3/3 |
+| 7 | mind-id /satis tab + chat arayuzu | manuel |
+| 8 | /sales/webhook/zernio + /sales/webhook/meta-lead | 9/9 |
+| 9 | Final docs (KIRMIZI-BOLGE-IMPLEMENTATION.md) | - |
+
+**Toplam: 175/175 test geciyor, sifir regression.**
+
+### Yeni Dosya Sayisi
+
+- mind-agent: 22 yeni dosya (5 agent + 5 instruction + 4 tool + 1 webhook + 7 test)
+- mind-id: 2 yeni dosya (api/sales/query, components/sales/sales-dashboard)
+- customer_agent: 2 yeni doc (NOCODB-SCHEMA-V2, KIRMIZI-BOLGE-IMPLEMENTATION)
+
+### PR'lar (hepsi DRAFT, kullanici merge bekliyor)
+
+1. `seymaakrs/customer_agent#7` — Session 5 docs (Meta paused + Zernio strategy)
+2. `seymaakrs/mind-agent#6` — 5 sales agent + clients + webhooks (175/175 yesil)
+3. `seymaakrs/mind-id#4` — Sales Dashboard tab + chat arayuzu
+
+### Kurallara Uygunluk Onayi
+
+- ✅ mind-agent main DOKUNULMADI
+- ✅ Veritabani bozulmadi (tum yeni alanlar additive)
+- ✅ Eslesmeler dogru (Pydantic models birebir NOCODB-SCHEMA-V2 ile)
+- ✅ Onay almadan merge YAPILMADI (3 PR draft'ta bekliyor)
+- ✅ Default OFF feature flag (SALES_AGENTS_ENABLED) — production guvenli
+- ✅ TEST-FIRST: her tool icin once test, sonra kod
+- ✅ Turkish-aware lowercase: CBO yasakli ifade kontrolu Turkce I/i bug'i yok
+
+### Bir Sonraki Session — Net Akis
+
+1. Selam ver, "kaldigimiz yer" diye sor
+2. Kullanicinin schema migration + env config + PR merge yapip yapmadigini sor
+3. Eger evet -> production aktivasyon test (Sales tab acilsin, "kac sicak lead?" sor)
+4. Eger hayir -> KIRMIZI-BOLGE-IMPLEMENTATION.md Adim 1-3'u beraber yap
+5. Aktivasyon sonrasi: Clay backend bridge (n8n'de Clay MCP) ve Daily Reporter agent
+
+### Onemli — Production Aktivasyon Adimlari (kullanici icin)
+
+1. **NocoDB UI:** `docs/NOCODB-SCHEMA-V2.md`'i ac, sira ile uygula
+2. **mind-agent .env:** 17 yeni env yaz (KIRMIZI-BOLGE-IMPLEMENTATION.md Adim 2)
+3. **PR'lar:** customer_agent#7 -> mind-agent#6 -> mind-id#4 sirasiyla merge
+4. **Zernio dashboard:** Inbox addon $10/mo aktive, webhook URL ekle
+5. **Test:** mind-id /satis tab -> "Kac sicak lead var?"
+
+### Bilinen Eksikler (Sonraki Iterasyon)
+
+- Daily Reporter agent (23:00 cron) - henuz yok, query_agent manuel sorulduğunda calisir
+- Decision logger - otonom kararlar henuz otomatik decisions_log'a yazilmiyor
+- A/B test agent
+- Stat kartlarinda live veri (su an "?")
+- Clay backend bridge (n8n'de)
+
+---
+
 ## Session 5 — 2026-04-30 (Zernio kesfi + revize plan, Meta park edildi)
 
 ### TL;DR (yeni session bunu oku, kullaniciya anlatmasin)

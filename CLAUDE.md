@@ -65,24 +65,24 @@
 - Tablolar aktif: `leads`, `lead_messages`, `seyma_notifications` (semasi master doc'ta)
 - API token + URL kullanicida
 
-## Mevcut Durak Noktasi (Session 5 — 2026-04-30 sonu)
+## Mevcut Durak Noktasi (Session 6 — 2026-04-30 sonu)
 
-**STRATEJIK KARARLAR (kullanici onayli):**
-1. Meta Lead Ads agent **PAUSED** -- FB App Development modunda, manuel CSV import ile devam
-2. **Zernio kesfedildi** -- 15 platform tek API. Kullanici 3 paket aldi (Analitik aktif, Inbox/Reklamlar eklenecek). IG DM/LinkedIn/FB DM Zernio uzerinden tek webhook
-3. **Revize plan** (5 faz, ~2 hafta): Clay -> Zernio entegrasyonu -> IG DM+LinkedIn -> Daily Reporter -> mind-id Sales Dashboard
+**KIRMIZI BOLGE (Customer Agent) IMPLEMENTASYON TAMAMLANDI.**
 
-**Final hedef:** Seyma mind-id dashboard'da chat'le "kac sicak lead var?" diye sorar, mind-agent NocoDB'den ceker, dogal dilde cevaplar.
+9 faz, 175/175 test, 0 regression, 3 PR (hepsi draft, kullanici onayina hazir):
+- `seymaakrs/customer_agent#7` — docs (NOCODB-SCHEMA-V2, ZERNIO-SPEC, IMPLEMENTATION rehberi)
+- `seymaakrs/mind-agent#6` — 5 sales agent + Zernio/NocoDB clients + webhook receivers
+- `seymaakrs/mind-id#4` — Sales Dashboard tab + chat arayüzü
 
-**Detaylar:** `SESSION_NOTES.md` Session 5 ve `ZERNIO-AGENT-SPEC.md` (Seyma'nin master agent spec'i)
+**Aktivasyon icin kullanicinin yapmasi gerekenler (3 adim):**
+1. NocoDB UI'da `docs/NOCODB-SCHEMA-V2.md`'deki schema'yi uygula (additive, mevcut veri etkilenmez)
+2. mind-agent .env'e 17 yeni env yaz (NOCODB_*, ZERNIO_*, SALES_*) — `docs/KIRMIZI-BOLGE-IMPLEMENTATION.md` Adim 2
+3. 3 PR'i merge et (sira: customer_agent -> mind-agent -> mind-id)
 
-**Kullanicidan bekleyen 3 soru:**
-1. Zernio Inbox paketini ekleyelim mi? ($10/mo)
-2. Meta Lead Ads'i Zernio ile test edelim mi?
-3. Faz sirasi: Once Clay (A) mi, once Zernio (B) mi? **Onerim B**
+**Detayli rehber:** `customer_agent/docs/KIRMIZI-BOLGE-IMPLEMENTATION.md`
 
-**KORU (silmeyin):** Meta Lead Ads workflow (xblguxS49CJ4r4OF) PAUSED, App Review sonrasi aktive edilecek
-**DOKUNMA:** mind-agent main
+**KORU (silmeyin):** Meta Lead Ads workflow (xblguxS49CJ4r4OF) PAUSED durumda
+**DOKUNULMADI:** mind-agent main, mind-id main (her sey branch'te)
 
 ## Buyuk Hedef Sirasi
 1. **Once mimariyi tamamla** — n8n'deki tum agent workflow'lari calisir hale getir (mevcut hedef)
