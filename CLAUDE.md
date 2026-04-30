@@ -65,24 +65,33 @@
 - Tablolar aktif: `leads`, `lead_messages`, `seyma_notifications` (semasi master doc'ta)
 - API token + URL kullanicida
 
-## Mevcut Durak Noktasi (Session 6 — 2026-04-30 sonu)
+## Mevcut Durak Noktasi (Session 6 sonu — 2026-04-30)
 
-**KIRMIZI BOLGE (Customer Agent) IMPLEMENTASYON TAMAMLANDI.**
+**KIRMIZI BOLGE IMPLEMENTASYON TAMAMLANDI + LANSMAN HARDENING.**
 
-9 faz, 175/175 test, 0 regression, 3 PR (hepsi draft, kullanici onayina hazir):
-- `seymaakrs/customer_agent#7` — docs (NOCODB-SCHEMA-V2, ZERNIO-SPEC, IMPLEMENTATION rehberi)
-- `seymaakrs/mind-agent#6` — 5 sales agent + Zernio/NocoDB clients + webhook receivers
-- `seymaakrs/mind-id#4` — Sales Dashboard tab + chat arayüzü
+3 PR draft'ta, kullanici merge bekliyor:
+- `seymaakrs/customer_agent#7` (docs)
+- `seymaakrs/mind-agent#6` (kod, 385/385 test)
+- `seymaakrs/mind-id#4` (UI, sales tab)
 
-**Aktivasyon icin kullanicinin yapmasi gerekenler (3 adim):**
-1. NocoDB UI'da `docs/NOCODB-SCHEMA-V2.md`'deki schema'yi uygula (additive, mevcut veri etkilenmez)
-2. mind-agent .env'e 17 yeni env yaz (NOCODB_*, ZERNIO_*, SALES_*) — `docs/KIRMIZI-BOLGE-IMPLEMENTATION.md` Adim 2
-3. 3 PR'i merge et (sira: customer_agent -> mind-agent -> mind-id)
+**Bugun tamamlanan ek isler (lansman hardening):**
+- Zernio API URL'leri docs.zernio.com'a gore duzeltildi (`/v1/inbox/conversations/{id}/messages`)
+- Schema contract test (18) — Pydantic ↔ NocoDB doc birebir hizali
+- 22 production edge case test
+- adminDb null guard (mind-id)
+- Ruff temiz, TS sales kodu temiz
+- `.env.sales.example` (17 env)
+- `LAUNCH-CHECKLIST.md` (T-30dk demo kontrol listesi)
+- `DEVIR-2026-04-30.md` (gun sonu devir cikti)
 
-**Detayli rehber:** `customer_agent/docs/KIRMIZI-BOLGE-IMPLEMENTATION.md`
+**Tum doku ve devir bilgileri:** `docs/DEVIR-2026-04-30.md`
 
-**KORU (silmeyin):** Meta Lead Ads workflow (xblguxS49CJ4r4OF) PAUSED durumda
-**DOKUNULMADI:** mind-agent main, mind-id main (her sey branch'te)
+**Yeni session basinda oku:**
+1. `CLAUDE.md` (bu dosya)
+2. `docs/DEVIR-2026-04-30.md` — bugun ne yapildi, ne bekliyor
+3. `docs/LAUNCH-CHECKLIST.md` — aktivasyon rehberi (kullanici aktivasyona basliyorsa)
+
+**KORU:** Meta Lead Ads workflow PAUSED, mind-agent main DOKUNULMADI
 
 ## Buyuk Hedef Sirasi
 1. **Once mimariyi tamamla** — n8n'deki tum agent workflow'lari calisir hale getir (mevcut hedef)
