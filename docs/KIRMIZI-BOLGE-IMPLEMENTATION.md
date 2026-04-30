@@ -191,13 +191,14 @@ NOCODB_AGENT_HEALTH_TABLE_ID=xxxxx
 
 # Zernio
 ZERNIO_API_KEY=zk_xxxxx
-ZERNIO_INBOX_ENABLED=true     # $10/mo addon eklenince true yap
-ZERNIO_ADS_ENABLED=false      # şimdilik false (sonra aktive)
-ZERNIO_ANALYTICS_ENABLED=true # 7-gün deneme aktif
+ZERNIO_BASE_URL=https://api.zernio.com   # default; override only if staging
+ZERNIO_INBOX_ENABLED=true                # $10/mo addon eklenince true yap
+ZERNIO_ADS_ENABLED=false                 # şimdilik false (sonra aktive)
+ZERNIO_ANALYTICS_ENABLED=true            # 7-gün deneme aktif
 
-# Webhooks (opsiyonel — production için ZORUNLU)
-ZERNIO_WEBHOOK_SECRET=<random-32-char-secret>
-META_WEBHOOK_SECRET=<from-fb-app-config>
+# Webhooks (production için ZORUNLU; DRY_RUN=true iken bypass)
+ZERNIO_WEBHOOK_SECRET=<zernio-dashboard-create-webhook-secret>
+META_WEBHOOK_SECRET=<from-fb-app-config-app-secret>
 META_VERIFY_TOKEN=<random-string-shared-with-fb-app>
 
 # Clay (n8n bridge) — Faz 8'den sonra
