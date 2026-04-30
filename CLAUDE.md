@@ -8,6 +8,12 @@
 **Mimari:** 6 agent paralel calisir (LinkedIn, Meta, Clay, IG DM, Takip, Itiraz) → NocoDB CRM → Seyma kapanis yapar
 **Detay:** `AGENT-MIMARISI-MASTER.md`
 
+## Detay/Master Dokümanlar
+
+- `AGENT-MIMARISI-MASTER.md` → 6 agent + 8 workflow + NocoDB tablo şablonları (mimari)
+- `ZERNIO-AGENT-SPEC.md` → **Şeyma'nın Claude Console'da kurduğu agent spec'i** (rol matrisi, otonom karar kuralları, raporlama formatı, itiraz şablonları). **Tüm yeni agent'lar bu spec'e göre kurulacak.**
+- `SESSION_NOTES.md` → Session bazlı kalıcı notlar
+
 ## Karar Verilmis Olan Seyler (DEGISMEZ)
 
 | Konu | Karar |
@@ -59,8 +65,33 @@
 - Tablolar aktif: `leads`, `lead_messages`, `seyma_notifications` (semasi master doc'ta)
 - API token + URL kullanicida
 
-## Mevcut Durak Noktasi
-**Meta Ads Agent workflow'unda kalindi** (n8n'de). Devam etmek icin kullanici hazir.
+## Mevcut Durak Noktasi (Session 6 sonu — 2026-04-30)
+
+**KIRMIZI BOLGE IMPLEMENTASYON TAMAMLANDI + LANSMAN HARDENING.**
+
+3 PR draft'ta, kullanici merge bekliyor:
+- `seymaakrs/customer_agent#7` (docs)
+- `seymaakrs/mind-agent#6` (kod, 385/385 test)
+- `seymaakrs/mind-id#4` (UI, sales tab)
+
+**Bugun tamamlanan ek isler (lansman hardening):**
+- Zernio API URL'leri docs.zernio.com'a gore duzeltildi (`/v1/inbox/conversations/{id}/messages`)
+- Schema contract test (18) — Pydantic ↔ NocoDB doc birebir hizali
+- 22 production edge case test
+- adminDb null guard (mind-id)
+- Ruff temiz, TS sales kodu temiz
+- `.env.sales.example` (17 env)
+- `LAUNCH-CHECKLIST.md` (T-30dk demo kontrol listesi)
+- `DEVIR-2026-04-30.md` (gun sonu devir cikti)
+
+**Tum doku ve devir bilgileri:** `docs/DEVIR-2026-04-30.md`
+
+**Yeni session basinda oku:**
+1. `CLAUDE.md` (bu dosya)
+2. `docs/DEVIR-2026-04-30.md` — bugun ne yapildi, ne bekliyor
+3. `docs/LAUNCH-CHECKLIST.md` — aktivasyon rehberi (kullanici aktivasyona basliyorsa)
+
+**KORU:** Meta Lead Ads workflow PAUSED, mind-agent main DOKUNULMADI
 
 ## Buyuk Hedef Sirasi
 1. **Once mimariyi tamamla** — n8n'deki tum agent workflow'lari calisir hale getir (mevcut hedef)
