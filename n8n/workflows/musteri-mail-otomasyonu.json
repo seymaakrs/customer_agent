@@ -1,0 +1,259 @@
+{
+  "updatedAt": "2026-03-11T18:40:28.631Z",
+  "createdAt": "2026-03-08T17:30:45.261Z",
+  "id": "faolAyTcoUJIBcal",
+  "name": "Müşteri Mail Otomasyonu (Claude Trigger)",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "musteri-mail-gonder",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "39d34533-c776-4e87-a710-bd948f131403",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        16
+      ],
+      "webhookId": "musteri-mail-webhook-001"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.recipients",
+        "options": {}
+      },
+      "id": "7c206fa2-5716-4ca2-980f-0b66cb3874b7",
+      "name": "Alıcıları Ayır",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        192,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const recipient = $input.item.json;\nconst allData = $('Webhook').first().json.body;\n\nlet subject = allData.subject || '(Konu yok)';\nlet body = allData.body || '';\nconst senderName = allData.senderName || '';\n\nfor (const [key, value] of Object.entries(recipient)) {\n  const regex = new RegExp(`\\\\{\\\\{${key}\\\\}\\\\}`, 'gi');\n  subject = subject.replace(regex, String(value ?? ''));\n  body = body.replace(regex, String(value ?? ''));\n}\n\nreturn {\n  json: {\n    to: recipient.email || recipient.Email || recipient.EMAIL,\n    subject,\n    body,\n    senderName\n  }\n};"
+      },
+      "id": "6aaf65b7-e0f1-488b-850d-0727cc16a226",
+      "name": "Kişiselleştir",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.body }}",
+        "options": {
+          "senderName": "={{ $json.senderName }}"
+        }
+      },
+      "id": "4718a6e9-d8fd-4730-941b-94eaa9bbf165",
+      "name": "Gmail ile Gönder",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        640,
+        16
+      ],
+      "webhookId": "cc5b206c-45e2-452b-a4bd-80882f4997bb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REDACTED",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Alıcıları Ayır",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alıcıları Ayır": {
+      "main": [
+        [
+          {
+            "node": "Kişiselleştir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kişiselleştir": {
+      "main": [
+        [
+          {
+            "node": "Gmail ile Gönder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "versionId": "ce818196-9fc1-4c13-b5ff-8bb375dff885",
+  "activeVersionId": "ce818196-9fc1-4c13-b5ff-8bb375dff885",
+  "versionCounter": 7,
+  "triggerCount": 1,
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-11T18:40:39.000Z",
+    "createdAt": "2026-03-08T17:31:21.137Z",
+    "versionId": "ce818196-9fc1-4c13-b5ff-8bb375dff885",
+    "workflowId": "faolAyTcoUJIBcal",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "musteri-mail-gonder",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "id": "39d34533-c776-4e87-a710-bd948f131403",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -32,
+          16
+        ],
+        "webhookId": "musteri-mail-webhook-001"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "body.recipients",
+          "options": {}
+        },
+        "id": "7c206fa2-5716-4ca2-980f-0b66cb3874b7",
+        "name": "Alıcıları Ayır",
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          192,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const recipient = $input.item.json;\nconst allData = $('Webhook').first().json.body;\n\nlet subject = allData.subject || '(Konu yok)';\nlet body = allData.body || '';\nconst senderName = allData.senderName || '';\n\nfor (const [key, value] of Object.entries(recipient)) {\n  const regex = new RegExp(`\\\\{\\\\{${key}\\\\}\\\\}`, 'gi');\n  subject = subject.replace(regex, String(value ?? ''));\n  body = body.replace(regex, String(value ?? ''));\n}\n\nreturn {\n  json: {\n    to: recipient.email || recipient.Email || recipient.EMAIL,\n    subject,\n    body,\n    senderName\n  }\n};"
+        },
+        "id": "6aaf65b7-e0f1-488b-850d-0727cc16a226",
+        "name": "Kişiselleştir",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          416,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.to }}",
+          "subject": "={{ $json.subject }}",
+          "message": "={{ $json.body }}",
+          "options": {
+            "senderName": "={{ $json.senderName }}"
+          }
+        },
+        "id": "4718a6e9-d8fd-4730-941b-94eaa9bbf165",
+        "name": "Gmail ile Gönder",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2,
+        "position": [
+          640,
+          16
+        ],
+        "webhookId": "cc5b206c-45e2-452b-a4bd-80882f4997bb",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "REDACTED",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Alıcıları Ayır",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Alıcıları Ayır": {
+        "main": [
+          [
+            {
+              "node": "Kişiselleştir",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Kişiselleştir": {
+        "main": [
+          [
+            {
+              "node": "Gmail ile Gönder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "şeyma karaş",
+    "name": "Version ce818196",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-11T18:40:39.492Z",
+        "id": 14,
+        "workflowId": "faolAyTcoUJIBcal",
+        "versionId": "ce818196-9fc1-4c13-b5ff-8bb375dff885",
+        "event": "activated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      }
+    ]
+  }
+}

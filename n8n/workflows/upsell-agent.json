@@ -1,0 +1,284 @@
+{
+  "updatedAt": "2026-04-15T11:24:09.448Z",
+  "createdAt": "2026-04-15T11:18:46.400Z",
+  "id": "kVXXr4e6O5F3lGiD",
+  "name": "Upsell Agent",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -464,
+        -16
+      ],
+      "id": "9e6be439-06c8-4814-8537-2c793fc355d7",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "workspaceId": "wgh5kblj",
+        "projectId": "ps9dj2fqrh823av",
+        "table": "mnf5nyu2mx5xtej",
+        "returnAll": true,
+        "options": {
+          "where": "=(asama,eq,Kazanildi)\n"
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "92072d16-4d1a-4e92-9b0c-8344459c99c5",
+      "name": "Get many rows",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "REDACTED",
+          "name": "NocoDB Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst bugün = new Date();\nconst uyanlar = [];\n\nfor (const item of items) {\n  const kapanis = item.json.kapanis_tarihi;\n  if (!kapanis) continue;\n  \n  const kapanisDate = new Date(kapanis);\n  const farkGun = Math.floor((bugün - kapanisDate) / (1000 * 60 * 60 * 24));\n  \n  // 28-32 gün arasi olanlari al (30 gun +- 2)\n  if (farkGun >= 28 && farkGun <= 32) {\n    uyanlar.push({\n      json: {\n        firsat_adi: item.json.firsat_adi || '',\n        paket: item.json.paket || '',\n        tutar: item.json.tutar || 0,\n        kapanis_tarihi: kapanis,\n        gecen_gun: farkGun,\n        lead_adi: item.json.lead_adi || ''\n      }\n    });\n  }\n}\n\nreturn uyanlar;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -16
+      ],
+      "id": "6a3cce21-0fc7-4993-a125-430f34312ed9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "seymaakrs@gmail.com",
+        "subject": "=UPSELL FIRSATI: {{ $json.firsat_adi }} - 30 gun oldu",
+        "message": "=<h2>Upsell Firsati — 30 Gun Once Kapandi</h2>\n<p><b>Firsat:</b> {{ $json.firsat_adi }}</p>\n<p><b>Mevcut Paket:</b> {{ $json.paket }}</p>\n<p><b>Mevcut Tutar:</b> {{ $json.tutar }} TL</p>\n<p><b>Kapanis Tarihi:</b> {{ $json.kapanis_tarihi }}</p>\n<p><b>Gecen Gun:</b> {{ $json.gecen_gun }}</p>\n<hr>\n<h3>Onerilen Aksiyon:</h3>\n<ul>\n  <li>Musteriyle iletisime gec</li>\n  <li>Mevcut paketten bir ust seviyeyi onerin</li>\n  <li>\"30 gundur hizmetimizi kullaniyorsunuz, sonuclari degerlendirelim mi?\"</li>\n  <li>Upgrade indirimi: %15 ilk ay</li>\n</ul>\n<hr>\n<p><i>Otomatik Upsell Agent tarafindan olusturuldu</i></p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -16
+      ],
+      "id": "35bf0126-00ef-4bef-8cfc-55cf962575f0",
+      "name": "Send a message",
+      "webhookId": "4ac2aaf2-8ff5-4a6b-9151-ebc6e3d9f218",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REDACTED",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "versionId": "5bb60939-a362-42d1-95b7-4d311b64b5c6",
+  "activeVersionId": "5bb60939-a362-42d1-95b7-4d311b64b5c6",
+  "versionCounter": 23,
+  "triggerCount": 1,
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-15T11:24:43.000Z",
+    "createdAt": "2026-04-15T11:24:09.448Z",
+    "versionId": "5bb60939-a362-42d1-95b7-4d311b64b5c6",
+    "workflowId": "kVXXr4e6O5F3lGiD",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 10
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -464,
+          -16
+        ],
+        "id": "9e6be439-06c8-4814-8537-2c793fc355d7",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "getAll",
+          "workspaceId": "wgh5kblj",
+          "projectId": "ps9dj2fqrh823av",
+          "table": "mnf5nyu2mx5xtej",
+          "returnAll": true,
+          "options": {
+            "where": "=(asama,eq,Kazanildi)\n"
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          -256,
+          -16
+        ],
+        "id": "92072d16-4d1a-4e92-9b0c-8344459c99c5",
+        "name": "Get many rows",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "REDACTED",
+            "name": "NocoDB Token account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst bugün = new Date();\nconst uyanlar = [];\n\nfor (const item of items) {\n  const kapanis = item.json.kapanis_tarihi;\n  if (!kapanis) continue;\n  \n  const kapanisDate = new Date(kapanis);\n  const farkGun = Math.floor((bugün - kapanisDate) / (1000 * 60 * 60 * 24));\n  \n  // 28-32 gün arasi olanlari al (30 gun +- 2)\n  if (farkGun >= 28 && farkGun <= 32) {\n    uyanlar.push({\n      json: {\n        firsat_adi: item.json.firsat_adi || '',\n        paket: item.json.paket || '',\n        tutar: item.json.tutar || 0,\n        kapanis_tarihi: kapanis,\n        gecen_gun: farkGun,\n        lead_adi: item.json.lead_adi || ''\n      }\n    });\n  }\n}\n\nreturn uyanlar;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -48,
+          -16
+        ],
+        "id": "6a3cce21-0fc7-4993-a125-430f34312ed9",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "sendTo": "seymaakrs@gmail.com",
+          "subject": "=UPSELL FIRSATI: {{ $json.firsat_adi }} - 30 gun oldu",
+          "message": "=<h2>Upsell Firsati — 30 Gun Once Kapandi</h2>\n<p><b>Firsat:</b> {{ $json.firsat_adi }}</p>\n<p><b>Mevcut Paket:</b> {{ $json.paket }}</p>\n<p><b>Mevcut Tutar:</b> {{ $json.tutar }} TL</p>\n<p><b>Kapanis Tarihi:</b> {{ $json.kapanis_tarihi }}</p>\n<p><b>Gecen Gun:</b> {{ $json.gecen_gun }}</p>\n<hr>\n<h3>Onerilen Aksiyon:</h3>\n<ul>\n  <li>Musteriyle iletisime gec</li>\n  <li>Mevcut paketten bir ust seviyeyi onerin</li>\n  <li>\"30 gundur hizmetimizi kullaniyorsunuz, sonuclari degerlendirelim mi?\"</li>\n  <li>Upgrade indirimi: %15 ilk ay</li>\n</ul>\n<hr>\n<p><i>Otomatik Upsell Agent tarafindan olusturuldu</i></p>\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          160,
+          -16
+        ],
+        "id": "35bf0126-00ef-4bef-8cfc-55cf962575f0",
+        "name": "Send a message",
+        "webhookId": "4ac2aaf2-8ff5-4a6b-9151-ebc6e3d9f218",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "REDACTED",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get many rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get many rows": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "şeyma karaş",
+    "name": "v1.0 - Upsell Agent ilk kurulum",
+    "description": "Her sabah 10:00 Pipeline taranir, 30 gun once kazanilan musterilere upsell bildirimi Seyma'ya gider.",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-15T11:24:43.321Z",
+        "id": 49,
+        "workflowId": "kVXXr4e6O5F3lGiD",
+        "versionId": "5bb60939-a362-42d1-95b7-4d311b64b5c6",
+        "event": "activated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      }
+    ]
+  }
+}

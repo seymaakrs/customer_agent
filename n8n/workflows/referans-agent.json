@@ -1,0 +1,285 @@
+{
+  "updatedAt": "2026-04-15T11:33:22.200Z",
+  "createdAt": "2026-04-15T11:30:39.169Z",
+  "id": "28hnN6OrH5TF9NX2",
+  "name": "Referans Agent",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 11
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -464,
+        -16
+      ],
+      "id": "5b9b4277-ad1e-49cd-9f09-fac4d949fd77",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "workspaceId": "wgh5kblj",
+        "projectId": "ps9dj2fqrh823av",
+        "table": "mnf5nyu2mx5xtej",
+        "returnAll": true,
+        "options": {
+          "where": "=(asama,eq,Kazanildi)\n"
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "19e85b00-91ad-4cb1-8526-ed117c1b91ca",
+      "name": "Get many rows",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "REDACTED",
+          "name": "NocoDB Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst bugün = new Date();\nconst uyanlar = [];\n\nfor (const item of items) {\n  const kapanis = item.json.kapanis_tarihi;\n  if (!kapanis) continue;\n  \n  const kapanisDate = new Date(kapanis);\n  const farkGun = Math.floor((bugün - kapanisDate) / (1000 * 60 * 60 * 24));\n  \n  // 58-62 gün arasi olanlari al (60 gun +- 2)\n  if (farkGun >= 58 && farkGun <= 62) {\n    uyanlar.push({\n      json: {\n        firsat_adi: item.json.firsat_adi || '',\n        paket: item.json.paket || '',\n        tutar: item.json.tutar || 0,\n        kapanis_tarihi: kapanis,\n        gecen_gun: farkGun,\n        lead_adi: item.json.lead_adi || ''\n      }\n    });\n  }\n}\n\nreturn uyanlar;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -16
+      ],
+      "id": "e67b01cd-1f61-474a-aa09-64f354a4617b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "seymaakrs@gmail.com",
+        "subject": "=REFERANS FIRSATI: {{ $json.firsat_adi }} - 60 gun oldu\n",
+        "message": "=<h2>Referans Firsati — 60 Gun Once Kapandi</h2>\n<p><b>Firsat:</b> {{ $json.firsat_adi }}</p>\n<p><b>Paket:</b> {{ $json.paket }}</p>\n<p><b>Kapanis Tarihi:</b> {{ $json.kapanis_tarihi }}</p>\n<p><b>Gecen Gun:</b> {{ $json.gecen_gun }}</p>\n<hr>\n<h3>Onerilen Aksiyon:</h3>\n<ul>\n  <li>Musteriyle iletisime gec</li>\n  <li>Memnun mu kontrol et</li>\n  <li>\"Tanidiklariniza onerirseniz, bir sonraki ayinizda %10 indirim\" teklif et</li>\n  <li>Her getirdigi referansa paketin %10'u kadar bonus</li>\n</ul>\n<hr>\n<p><i>Otomatik Referans Agent tarafindan olusturuldu</i></p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -16
+      ],
+      "id": "31c72c36-cb6d-4dc5-9a06-a991f6f69319",
+      "name": "Send a message",
+      "webhookId": "313885c0-54e5-4b10-90da-1873f1f4076c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REDACTED",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "versionId": "37d5fc08-f359-4fcd-b2da-b3c6bb24c22b",
+  "activeVersionId": "37d5fc08-f359-4fcd-b2da-b3c6bb24c22b",
+  "versionCounter": 8,
+  "triggerCount": 1,
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-15T11:35:59.000Z",
+    "createdAt": "2026-04-15T11:33:22.201Z",
+    "versionId": "37d5fc08-f359-4fcd-b2da-b3c6bb24c22b",
+    "workflowId": "28hnN6OrH5TF9NX2",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 11
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -464,
+          -16
+        ],
+        "id": "5b9b4277-ad1e-49cd-9f09-fac4d949fd77",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "getAll",
+          "workspaceId": "wgh5kblj",
+          "projectId": "ps9dj2fqrh823av",
+          "table": "mnf5nyu2mx5xtej",
+          "returnAll": true,
+          "options": {
+            "where": "=(asama,eq,Kazanildi)\n"
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          -256,
+          -16
+        ],
+        "id": "19e85b00-91ad-4cb1-8526-ed117c1b91ca",
+        "name": "Get many rows",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "REDACTED",
+            "name": "NocoDB Token account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst bugün = new Date();\nconst uyanlar = [];\n\nfor (const item of items) {\n  const kapanis = item.json.kapanis_tarihi;\n  if (!kapanis) continue;\n  \n  const kapanisDate = new Date(kapanis);\n  const farkGun = Math.floor((bugün - kapanisDate) / (1000 * 60 * 60 * 24));\n  \n  // 58-62 gün arasi olanlari al (60 gun +- 2)\n  if (farkGun >= 58 && farkGun <= 62) {\n    uyanlar.push({\n      json: {\n        firsat_adi: item.json.firsat_adi || '',\n        paket: item.json.paket || '',\n        tutar: item.json.tutar || 0,\n        kapanis_tarihi: kapanis,\n        gecen_gun: farkGun,\n        lead_adi: item.json.lead_adi || ''\n      }\n    });\n  }\n}\n\nreturn uyanlar;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -48,
+          -16
+        ],
+        "id": "e67b01cd-1f61-474a-aa09-64f354a4617b",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "sendTo": "seymaakrs@gmail.com",
+          "subject": "=REFERANS FIRSATI: {{ $json.firsat_adi }} - 60 gun oldu\n",
+          "message": "=<h2>Referans Firsati — 60 Gun Once Kapandi</h2>\n<p><b>Firsat:</b> {{ $json.firsat_adi }}</p>\n<p><b>Paket:</b> {{ $json.paket }}</p>\n<p><b>Kapanis Tarihi:</b> {{ $json.kapanis_tarihi }}</p>\n<p><b>Gecen Gun:</b> {{ $json.gecen_gun }}</p>\n<hr>\n<h3>Onerilen Aksiyon:</h3>\n<ul>\n  <li>Musteriyle iletisime gec</li>\n  <li>Memnun mu kontrol et</li>\n  <li>\"Tanidiklariniza onerirseniz, bir sonraki ayinizda %10 indirim\" teklif et</li>\n  <li>Her getirdigi referansa paketin %10'u kadar bonus</li>\n</ul>\n<hr>\n<p><i>Otomatik Referans Agent tarafindan olusturuldu</i></p>\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          160,
+          -16
+        ],
+        "id": "31c72c36-cb6d-4dc5-9a06-a991f6f69319",
+        "name": "Send a message",
+        "webhookId": "313885c0-54e5-4b10-90da-1873f1f4076c",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "REDACTED",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get many rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get many rows": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "şeyma karaş",
+    "name": "v1.0 - Referans Agent ilk kurulum",
+    "description": "Her sabah 11:00 Pipeline taranir, 60 gun once kazanilan musterilere referans programi bildirimi Seyma'ya gider.\n",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-15T11:35:59.522Z",
+        "id": 50,
+        "workflowId": "28hnN6OrH5TF9NX2",
+        "versionId": "37d5fc08-f359-4fcd-b2da-b3c6bb24c22b",
+        "event": "activated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      }
+    ]
+  }
+}

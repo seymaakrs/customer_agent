@@ -1,0 +1,418 @@
+{
+  "updatedAt": "2026-04-15T09:11:31.555Z",
+  "createdAt": "2026-04-14T14:44:43.067Z",
+  "id": "9nTdKNPLCjo8DKfE",
+  "name": "İtiraz Agent",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "itiraz-gelen",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        0
+      ],
+      "id": "a39c3a87-352a-4aea-8313-cb02efbf4583",
+      "name": "Webhook",
+      "webhookId": "f918f1ad-c7ec-4166-a475-168b65774668"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sen Mindid firmasinin satis asistanisin. Musteri su mesaji gonderdi: \"{{ $json.body.mesaj }}\"\n\nMusterinin hangi itirazi yaptigini tespit et (Fiyat / Erteleme / Rekabet / Olcek / Teknoloji / Kanit / Diger) ve profesyonel, samimi bir cevap yaz.\n\nCevabi JSON formatinda dondur:\n{\n  \"itiraz_turu\": \"...\",\n  \"cevap\": \"...\"\n}\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "f9829d24-8141-423b-8cce-5e9280b557cf",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        192
+      ],
+      "id": "637200d3-b4a7-4813-a219-5d2b2cf97165",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "REDACTED",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('Webhook').first().json.body;\nconst geminiText = $input.first().json.text;\n\n// Gemini cevabindan JSON parse et (```json ... ``` temizle)\nlet parsed = {};\ntry {\n  const cleaned = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { itiraz_turu: 'Diger', cevap: geminiText };\n}\n\nreturn [{\n  json: {\n    musteri_email: webhookData.musteri_email || '',\n    musteri_mesaji: webhookData.mesaj || '',\n    itiraz_turu: parsed.itiraz_turu || 'Diger',\n    cevap: parsed.cevap || '',\n    tarih: new Date().toISOString()\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        0
+      ],
+      "id": "77c07c2a-6c08-4c67-a9d2-b7e80f5226df",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "workspaceId": "wgh5kblj",
+        "projectId": "ps9dj2fqrh823av",
+        "table": "mky0j8v1ldynbfu",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "lead_adi",
+              "fieldValue": "={{ $json.musteri_email }}"
+            },
+            {
+              "fieldName": "itiraz_turu",
+              "fieldValue": "={{ $json.itiraz_turu }}"
+            },
+            {
+              "fieldName": "itiraz_metni",
+              "fieldValue": "={{ $json.musteri_mesaji }}"
+            },
+            {
+              "fieldName": "karsilama_metni",
+              "fieldValue": "={{ $json.cevap }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        320,
+        0
+      ],
+      "id": "6fa5f11b-a7c5-4f6b-9a2c-0f9fbe168c2d",
+      "name": "Create a row",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "REDACTED",
+          "name": "NocoDB Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "seymaakrs@gmail.com",
+        "subject": "=ITIRAZ: {{ $json.itiraz_turu }} - {{ $json.lead_adi }}\n",
+        "message": "=<h2>Yeni Itiraz Geldi — Otomatik Cevap Hazir</h2>\n<p><b>Musteri:</b> {{ $json.lead_adi }}</p>\n<p><b>Itiraz Turu:</b> {{ $json.itiraz_turu }}</p>\n<hr>\n<h3>Musterinin Mesaji:</h3>\n<p style=\"background:#f5f5f5;padding:10px\">{{ $json.itiraz_metni }}</p>\n<h3>AI Onerisi (Gemini):</h3>\n<p style=\"background:#e8f5e9;padding:10px\">{{ $json.karsilama_metni }}</p>\n<hr>\n<p><b>Yukaridaki cevabi inceleyin. Uygunsa musteriye gonderin.</b></p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        0
+      ],
+      "id": "71057026-beba-4e67-8835-dfb85bd1aa20",
+      "name": "Send a message",
+      "webhookId": "cd396d65-347a-4ec6-9786-14bcbd927d83",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REDACTED",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "versionId": "d7e4efcc-2d39-4616-b28a-abd72f67155e",
+  "activeVersionId": "d7e4efcc-2d39-4616-b28a-abd72f67155e",
+  "versionCounter": 61,
+  "triggerCount": 1,
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-15T09:47:10.000Z",
+    "createdAt": "2026-04-15T09:11:31.555Z",
+    "versionId": "d7e4efcc-2d39-4616-b28a-abd72f67155e",
+    "workflowId": "9nTdKNPLCjo8DKfE",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "itiraz-gelen",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -496,
+          0
+        ],
+        "id": "a39c3a87-352a-4aea-8313-cb02efbf4583",
+        "name": "Webhook",
+        "webhookId": "f918f1ad-c7ec-4166-a475-168b65774668"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Sen Mindid firmasinin satis asistanisin. Musteri su mesaji gonderdi: \"{{ $json.body.mesaj }}\"\n\nMusterinin hangi itirazi yaptigini tespit et (Fiyat / Erteleme / Rekabet / Olcek / Teknoloji / Kanit / Diger) ve profesyonel, samimi bir cevap yaz.\n\nCevabi JSON formatinda dondur:\n{\n  \"itiraz_turu\": \"...\",\n  \"cevap\": \"...\"\n}\n",
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          -192,
+          0
+        ],
+        "id": "f9829d24-8141-423b-8cce-5e9280b557cf",
+        "name": "Basic LLM Chain"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -160,
+          192
+        ],
+        "id": "637200d3-b4a7-4813-a219-5d2b2cf97165",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "REDACTED",
+            "name": "Google Gemini(PaLM) Api account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const webhookData = $('Webhook').first().json.body;\nconst geminiText = $input.first().json.text;\n\n// Gemini cevabindan JSON parse et (```json ... ``` temizle)\nlet parsed = {};\ntry {\n  const cleaned = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { itiraz_turu: 'Diger', cevap: geminiText };\n}\n\nreturn [{\n  json: {\n    musteri_email: webhookData.musteri_email || '',\n    musteri_mesaji: webhookData.mesaj || '',\n    itiraz_turu: parsed.itiraz_turu || 'Diger',\n    cevap: parsed.cevap || '',\n    tarih: new Date().toISOString()\n  }\n}];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          112,
+          0
+        ],
+        "id": "77c07c2a-6c08-4c67-a9d2-b7e80f5226df",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "create",
+          "workspaceId": "wgh5kblj",
+          "projectId": "ps9dj2fqrh823av",
+          "table": "mky0j8v1ldynbfu",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "lead_adi",
+                "fieldValue": "={{ $json.musteri_email }}"
+              },
+              {
+                "fieldName": "itiraz_turu",
+                "fieldValue": "={{ $json.itiraz_turu }}"
+              },
+              {
+                "fieldName": "itiraz_metni",
+                "fieldValue": "={{ $json.musteri_mesaji }}"
+              },
+              {
+                "fieldName": "karsilama_metni",
+                "fieldValue": "={{ $json.cevap }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          320,
+          0
+        ],
+        "id": "6fa5f11b-a7c5-4f6b-9a2c-0f9fbe168c2d",
+        "name": "Create a row",
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "REDACTED",
+            "name": "NocoDB Token account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "seymaakrs@gmail.com",
+          "subject": "=ITIRAZ: {{ $json.itiraz_turu }} - {{ $json.lead_adi }}\n",
+          "message": "=<h2>Yeni Itiraz Geldi — Otomatik Cevap Hazir</h2>\n<p><b>Musteri:</b> {{ $json.lead_adi }}</p>\n<p><b>Itiraz Turu:</b> {{ $json.itiraz_turu }}</p>\n<hr>\n<h3>Musterinin Mesaji:</h3>\n<p style=\"background:#f5f5f5;padding:10px\">{{ $json.itiraz_metni }}</p>\n<h3>AI Onerisi (Gemini):</h3>\n<p style=\"background:#e8f5e9;padding:10px\">{{ $json.karsilama_metni }}</p>\n<hr>\n<p><b>Yukaridaki cevabi inceleyin. Uygunsa musteriye gonderin.</b></p>\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          528,
+          0
+        ],
+        "id": "71057026-beba-4e67-8835-dfb85bd1aa20",
+        "name": "Send a message",
+        "webhookId": "cd396d65-347a-4ec6-9786-14bcbd927d83",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "REDACTED",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Basic LLM Chain": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Create a row",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create a row": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "şeyma karaş",
+    "name": "v1.0 - Ilk kurulum",
+    "description": "Webhook ile itiraz alir, Gemini ile analiz eder, NocoDB'ye kaydeder, Seyma'ya onay maili gonderir.\n",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-15T09:47:10.823Z",
+        "id": 48,
+        "workflowId": "9nTdKNPLCjo8DKfE",
+        "versionId": "d7e4efcc-2d39-4616-b28a-abd72f67155e",
+        "event": "activated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      }
+    ]
+  }
+}

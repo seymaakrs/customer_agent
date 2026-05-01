@@ -1,0 +1,538 @@
+{
+  "updatedAt": "2026-04-29T09:36:13.683Z",
+  "createdAt": "2026-04-24T09:43:04.959Z",
+  "id": "xblguxS49CJ4r4OF",
+  "name": "Meta Lead Ads Agent",
+  "description": "Facebook Lead Ads formu doldurulunca tetiklenir. Lead bilgilerini NocoDB'ye skorla birlikte kaydeder, Sicak/Ilik ise Seyma'ya mail gonderir.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "page": {
+          "__rl": true,
+          "value": "948197981703583",
+          "mode": "list",
+          "cachedResultName": "Slowdays Bodrum",
+          "cachedResultUrl": "https://facebook.com/948197981703583"
+        },
+        "form": {
+          "__rl": true,
+          "value": "1614597482989083",
+          "mode": "list",
+          "cachedResultName": "Slowdays Dijital Paketler"
+        },
+        "options": {
+          "simplifyOutput": true
+        }
+      },
+      "id": "162e202d-726a-477b-a390-827d34e00c83",
+      "name": "Facebook Lead Ads",
+      "type": "n8n-nodes-base.facebookLeadAdsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        -128
+      ],
+      "webhookId": "2a3403b2-f405-4ef5-b640-317747ecb6fd",
+      "credentials": {
+        "facebookLeadAdsOAuth2Api": {
+          "id": "REDACTED",
+          "name": "Facebook Lead Ads account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\n// Meta form field mapping\nconst ad_soyad = item.full_name || '';\nconst email = item.email || '';\nconst telefon = item.phone_number || '';\nconst sirket_adi = item.company_name || '';\nconst konum = item.city || 'Bodrum';\n\n// Custom questions (field_data array)\nlet sektor = 'Diger';\nlet hizmet = '';\nlet butce = '';\n\nif (item.field_data) {\n  for (const f of item.field_data) {\n    if (f.name && f.name.toLowerCase().includes('sektor')) sektor = f.values?.[0] || 'Diger';\n    if (f.name && f.name.toLowerCase().includes('hizmet')) hizmet = f.values?.[0] || '';\n    if (f.name && f.name.toLowerCase().includes('butce')) butce = f.values?.[0] || '';\n  }\n}\n\nconst validSectors = ['Otelcilik','Yeme-Icme','Perakende','Turizm','E-ticaret','Tekne-Yat','Emlak','Spa-Wellness','Doktor-Uzman','Koc-Egitmen','Kurumsal-Kamu','Butik-Moda','Kafe','Restoran','Diger'];\nconst sektorClean = validSectors.includes(sektor) ? sektor : 'Diger';\n\n// Lead skorlama\nlet skor = 25; // Meta Ads form doldurdu = base 25\n\nconst hedefSektorler = ['Otelcilik', 'Yeme-Icme', 'Turizm', 'Spa-Wellness'];\nif (hedefSektorler.includes(sektorClean)) skor += 20;\nelse if (sektorClean !== 'Diger') skor += 10;\n\nconst hedefKonumlar = ['Bodrum', 'Marmaris', 'Fethiye', 'Datca', 'Gocek'];\nif (hedefKonumlar.some(k => konum.includes(k))) skor += 15;\n\nif (butce.includes('15.000') || butce.includes('30.000')) skor += 15;\nelse if (butce.includes('5.000')) skor += 5;\n\n// Asama belirleme\nlet asama = 'Yeni';\nif (skor >= 60) asama = 'Sicak';\nelse if (skor >= 40) asama = 'Ilik';\n\nreturn [{json: {\n  ad_soyad, email, telefon, sirket_adi, sektor: sektorClean, konum,\n  kaynak: 'Meta Ads', asama, lead_skoru: skor,\n  ihtiyac_notu: 'Hizmet: ' + hizmet + ' | Butce: ' + butce\n}}];"
+      },
+      "id": "8e3548a3-e458-400c-8bea-d5f88fe990d1",
+      "name": "Map Fields and Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "workspaceId": "wgh5kblj",
+        "projectId": "ps9dj2fqrh823av",
+        "table": "m5lcgc5ifeqh38h",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "ad_soyad",
+              "fieldValue": "={{ $json.ad_soyad }}"
+            },
+            {
+              "fieldName": "email",
+              "fieldValue": "={{ $json.email }}"
+            },
+            {
+              "fieldName": "telefon",
+              "fieldValue": "={{ $json.telefon }}"
+            },
+            {
+              "fieldName": "sirket_adi",
+              "fieldValue": "={{ $json.sirket_adi }}"
+            },
+            {
+              "fieldName": "sektor",
+              "fieldValue": "={{ $json.sektor }}"
+            },
+            {
+              "fieldName": "konum",
+              "fieldValue": "={{ $json.konum }}"
+            },
+            {
+              "fieldName": "kaynak",
+              "fieldValue": "={{ $json.kaynak }}"
+            },
+            {
+              "fieldName": "asama",
+              "fieldValue": "={{ $json.asama }}"
+            },
+            {
+              "fieldName": "lead_skoru",
+              "fieldValue": "={{ $json.lead_skoru }}"
+            },
+            {
+              "fieldName": "ihtiyac_notu",
+              "fieldValue": "={{ $json.ihtiyac_notu }}"
+            }
+          ]
+        }
+      },
+      "id": "cbc1713f-d411-423d-b326-a1fd8a7265fb",
+      "name": "Save to NocoDB",
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        -128
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "REDACTED",
+          "name": "NocoDB Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.asama }}",
+              "rightValue": "Sicak",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.asama }}",
+              "rightValue": "Ilik",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "4844fd6c-d9cf-4af4-8eb6-8c771fe0dd0f",
+      "name": "Is Hot Lead",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        128,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "seymaakrs@gmail.com",
+        "subject": "=META LEAD: {{ $json.ad_soyad }} - {{ $json.sirket_adi }} (Skor: {{ $json.lead_skoru }}/100)",
+        "message": "=<h2>Meta Ads Lead Geldi!</h2><p><b>Ad Soyad:</b> {{ $json.ad_soyad }}</p><p><b>Sirket:</b> {{ $json.sirket_adi }}</p><p><b>Email:</b> {{ $json.email }}</p><p><b>Telefon:</b> {{ $json.telefon }}</p><p><b>Sektor:</b> {{ $json.sektor }}</p><p><b>Konum:</b> {{ $json.konum }}</p><p><b>Asama:</b> {{ $json.asama }}</p><p><b>Lead Skoru:</b> {{ $json.lead_skoru }}/100</p><p><b>Ihtiyac:</b> {{ $json.ihtiyac_notu }}</p><hr><p><b>Bu lead Meta reklamdan geldi. HEMEN ARAYIN!</b></p>",
+        "options": {}
+      },
+      "id": "8ceeba1c-03c2-4adc-b786-35157a611f1b",
+      "name": "Alert Seyma",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -144
+      ],
+      "webhookId": "bf5e8a7d-d187-4d70-bb4e-0db731c4bd23",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REDACTED",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Facebook Lead Ads": {
+      "main": [
+        [
+          {
+            "node": "Map Fields and Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Fields and Score": {
+      "main": [
+        [
+          {
+            "node": "Save to NocoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to NocoDB": {
+      "main": [
+        [
+          {
+            "node": "Is Hot Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Hot Lead": {
+      "main": [
+        [
+          {
+            "node": "Alert Seyma",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "templateCredsSetupCompleted": true
+  },
+  "versionId": "74e04de6-cf18-4d5c-9c15-782878f57094",
+  "activeVersionId": "74e04de6-cf18-4d5c-9c15-782878f57094",
+  "versionCounter": 17,
+  "triggerCount": 1,
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-29T13:13:24.000Z",
+    "createdAt": "2026-04-29T09:36:13.684Z",
+    "versionId": "74e04de6-cf18-4d5c-9c15-782878f57094",
+    "workflowId": "xblguxS49CJ4r4OF",
+    "nodes": [
+      {
+        "parameters": {
+          "page": {
+            "__rl": true,
+            "value": "948197981703583",
+            "mode": "list",
+            "cachedResultName": "Slowdays Bodrum",
+            "cachedResultUrl": "https://facebook.com/948197981703583"
+          },
+          "form": {
+            "__rl": true,
+            "value": "1614597482989083",
+            "mode": "list",
+            "cachedResultName": "Slowdays Dijital Paketler"
+          },
+          "options": {
+            "simplifyOutput": true
+          }
+        },
+        "id": "162e202d-726a-477b-a390-827d34e00c83",
+        "name": "Facebook Lead Ads",
+        "type": "n8n-nodes-base.facebookLeadAdsTrigger",
+        "typeVersion": 1,
+        "position": [
+          -656,
+          -128
+        ],
+        "webhookId": "2a3403b2-f405-4ef5-b640-317747ecb6fd",
+        "credentials": {
+          "facebookLeadAdsOAuth2Api": {
+            "id": "REDACTED",
+            "name": "Facebook Lead Ads account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const item = $input.first().json;\n\n// Meta form field mapping\nconst ad_soyad = item.full_name || '';\nconst email = item.email || '';\nconst telefon = item.phone_number || '';\nconst sirket_adi = item.company_name || '';\nconst konum = item.city || 'Bodrum';\n\n// Custom questions (field_data array)\nlet sektor = 'Diger';\nlet hizmet = '';\nlet butce = '';\n\nif (item.field_data) {\n  for (const f of item.field_data) {\n    if (f.name && f.name.toLowerCase().includes('sektor')) sektor = f.values?.[0] || 'Diger';\n    if (f.name && f.name.toLowerCase().includes('hizmet')) hizmet = f.values?.[0] || '';\n    if (f.name && f.name.toLowerCase().includes('butce')) butce = f.values?.[0] || '';\n  }\n}\n\nconst validSectors = ['Otelcilik','Yeme-Icme','Perakende','Turizm','E-ticaret','Tekne-Yat','Emlak','Spa-Wellness','Doktor-Uzman','Koc-Egitmen','Kurumsal-Kamu','Butik-Moda','Kafe','Restoran','Diger'];\nconst sektorClean = validSectors.includes(sektor) ? sektor : 'Diger';\n\n// Lead skorlama\nlet skor = 25; // Meta Ads form doldurdu = base 25\n\nconst hedefSektorler = ['Otelcilik', 'Yeme-Icme', 'Turizm', 'Spa-Wellness'];\nif (hedefSektorler.includes(sektorClean)) skor += 20;\nelse if (sektorClean !== 'Diger') skor += 10;\n\nconst hedefKonumlar = ['Bodrum', 'Marmaris', 'Fethiye', 'Datca', 'Gocek'];\nif (hedefKonumlar.some(k => konum.includes(k))) skor += 15;\n\nif (butce.includes('15.000') || butce.includes('30.000')) skor += 15;\nelse if (butce.includes('5.000')) skor += 5;\n\n// Asama belirleme\nlet asama = 'Yeni';\nif (skor >= 60) asama = 'Sicak';\nelse if (skor >= 40) asama = 'Ilik';\n\nreturn [{json: {\n  ad_soyad, email, telefon, sirket_adi, sektor: sektorClean, konum,\n  kaynak: 'Meta Ads', asama, lead_skoru: skor,\n  ihtiyac_notu: 'Hizmet: ' + hizmet + ' | Butce: ' + butce\n}}];"
+        },
+        "id": "8e3548a3-e458-400c-8bea-d5f88fe990d1",
+        "name": "Map Fields and Score",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -384,
+          -128
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "operation": "create",
+          "workspaceId": "wgh5kblj",
+          "projectId": "ps9dj2fqrh823av",
+          "table": "m5lcgc5ifeqh38h",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "ad_soyad",
+                "fieldValue": "={{ $json.ad_soyad }}"
+              },
+              {
+                "fieldName": "email",
+                "fieldValue": "={{ $json.email }}"
+              },
+              {
+                "fieldName": "telefon",
+                "fieldValue": "={{ $json.telefon }}"
+              },
+              {
+                "fieldName": "sirket_adi",
+                "fieldValue": "={{ $json.sirket_adi }}"
+              },
+              {
+                "fieldName": "sektor",
+                "fieldValue": "={{ $json.sektor }}"
+              },
+              {
+                "fieldName": "konum",
+                "fieldValue": "={{ $json.konum }}"
+              },
+              {
+                "fieldName": "kaynak",
+                "fieldValue": "={{ $json.kaynak }}"
+              },
+              {
+                "fieldName": "asama",
+                "fieldValue": "={{ $json.asama }}"
+              },
+              {
+                "fieldName": "lead_skoru",
+                "fieldValue": "={{ $json.lead_skoru }}"
+              },
+              {
+                "fieldName": "ihtiyac_notu",
+                "fieldValue": "={{ $json.ihtiyac_notu }}"
+              }
+            ]
+          }
+        },
+        "id": "cbc1713f-d411-423d-b326-a1fd8a7265fb",
+        "name": "Save to NocoDB",
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          -128,
+          -128
+        ],
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "REDACTED",
+            "name": "NocoDB Token account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.asama }}",
+                "rightValue": "Sicak",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              },
+              {
+                "id": "c2",
+                "leftValue": "={{ $json.asama }}",
+                "rightValue": "Ilik",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "id": "4844fd6c-d9cf-4af4-8eb6-8c771fe0dd0f",
+        "name": "Is Hot Lead",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          128,
+          -128
+        ]
+      },
+      {
+        "parameters": {
+          "sendTo": "seymaakrs@gmail.com",
+          "subject": "=META LEAD: {{ $json.ad_soyad }} - {{ $json.sirket_adi }} (Skor: {{ $json.lead_skoru }}/100)",
+          "message": "=<h2>Meta Ads Lead Geldi!</h2><p><b>Ad Soyad:</b> {{ $json.ad_soyad }}</p><p><b>Sirket:</b> {{ $json.sirket_adi }}</p><p><b>Email:</b> {{ $json.email }}</p><p><b>Telefon:</b> {{ $json.telefon }}</p><p><b>Sektor:</b> {{ $json.sektor }}</p><p><b>Konum:</b> {{ $json.konum }}</p><p><b>Asama:</b> {{ $json.asama }}</p><p><b>Lead Skoru:</b> {{ $json.lead_skoru }}/100</p><p><b>Ihtiyac:</b> {{ $json.ihtiyac_notu }}</p><hr><p><b>Bu lead Meta reklamdan geldi. HEMEN ARAYIN!</b></p>",
+          "options": {}
+        },
+        "id": "8ceeba1c-03c2-4adc-b786-35157a611f1b",
+        "name": "Alert Seyma",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          416,
+          -144
+        ],
+        "webhookId": "bf5e8a7d-d187-4d70-bb4e-0db731c4bd23",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "REDACTED",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Facebook Lead Ads": {
+        "main": [
+          [
+            {
+              "node": "Map Fields and Score",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Map Fields and Score": {
+        "main": [
+          [
+            {
+              "node": "Save to NocoDB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save to NocoDB": {
+        "main": [
+          [
+            {
+              "node": "Is Hot Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Hot Lead": {
+        "main": [
+          [
+            {
+              "node": "Alert Seyma",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "şeyma karaş",
+    "name": "Version 74e04de6",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-29T09:54:48.893Z",
+        "id": 56,
+        "workflowId": "xblguxS49CJ4r4OF",
+        "versionId": "74e04de6-cf18-4d5c-9c15-782878f57094",
+        "event": "activated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      },
+      {
+        "createdAt": "2026-04-29T10:15:46.432Z",
+        "id": 58,
+        "workflowId": "xblguxS49CJ4r4OF",
+        "versionId": "74e04de6-cf18-4d5c-9c15-782878f57094",
+        "event": "activated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      },
+      {
+        "createdAt": "2026-04-29T13:13:24.418Z",
+        "id": 60,
+        "workflowId": "xblguxS49CJ4r4OF",
+        "versionId": "74e04de6-cf18-4d5c-9c15-782878f57094",
+        "event": "activated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      },
+      {
+        "createdAt": "2026-04-29T10:15:40.937Z",
+        "id": 57,
+        "workflowId": "xblguxS49CJ4r4OF",
+        "versionId": "74e04de6-cf18-4d5c-9c15-782878f57094",
+        "event": "deactivated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      },
+      {
+        "createdAt": "2026-04-29T13:13:16.426Z",
+        "id": 59,
+        "workflowId": "xblguxS49CJ4r4OF",
+        "versionId": "74e04de6-cf18-4d5c-9c15-782878f57094",
+        "event": "deactivated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      }
+    ]
+  }
+}

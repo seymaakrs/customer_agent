@@ -1,0 +1,471 @@
+{
+  "updatedAt": "2026-04-23T11:20:08.750Z",
+  "createdAt": "2026-04-03T14:51:45.932Z",
+  "id": "l31p16NRZeyk4eEm",
+  "name": "Lead Toplama Agent",
+  "description": "Webhook ile lead alir, skor hesaplar (sektor+konum+kaynak+asama bazli 0-100 puan), NocoDB'ye skorla birlikte kaydeder, Sicak/Ilik ise Seyma'ya mail gonderir.",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "a385505a-f56b-40e8-b5c7-256c1c2efdc6",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-toplama",
+        "options": {}
+      },
+      "webhookId": "0f6561d3-5e21-4a82-82e1-6c1bdf88b1ef"
+    },
+    {
+      "id": "76e20e87-4b9b-4124-a6ee-365669247bfb",
+      "name": "Calculate Lead Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const item = $input.first().json.body || $input.first().json;\nlet skor = 0;\n\nconst hedefSektorler = ['Otelcilik', 'Yeme-Icme', 'Turizm', 'Spa-Wellness'];\nif (hedefSektorler.includes(item.sektor)) skor += 20;\nelse if (item.sektor && item.sektor !== 'Diger') skor += 10;\n\nconst hedefKonumlar = ['Bodrum', 'Marmaris', 'Fethiye', 'Datca', 'Gocek'];\nif (hedefKonumlar.some(k => (item.konum || '').includes(k))) skor += 15;\nelse if ((item.konum || '').includes('Mugla')) skor += 10;\n\nif (item.kaynak === 'Meta Ads') skor += 25;\nelse if (item.kaynak === 'Clay') skor += 15;\nelse if (item.kaynak === 'LinkedIn') skor += 15;\nelse if (item.kaynak === 'IG DM') skor += 10;\nelse if (item.kaynak === 'Manuel') skor += 5;\n\nif (item.asama === 'Sicak') skor += 30;\nelse if (item.asama === 'Ilik') skor += 20;\nelse if (item.asama === 'Yeni') skor += 5;\n\nconst validSectors = ['Otelcilik','Yeme-Icme','Perakende','Turizm','E-ticaret','Tekne-Yat','Emlak','Spa-Wellness','Doktor-Uzman','Koc-Egitmen','Kurumsal-Kamu','Butik-Moda','Kafe','Restoran','Diger'];\nconst sektorClean = validSectors.includes(item.sektor) ? item.sektor : 'Diger';\n\nreturn [{json: {\n  ad_soyad: item.ad_soyad || '',\n  email: item.email || '',\n  telefon: item.telefon || '',\n  sirket_adi: item.sirket_adi || '',\n  sektor: sektorClean,\n  konum: item.konum || '',\n  kaynak: item.kaynak || 'Manuel',\n  asama: item.asama || 'Yeni',\n  lead_skoru: skor\n}}];"
+      }
+    },
+    {
+      "id": "b88deae4-0924-4488-a77f-41dd7497c9b1",
+      "name": "Create Lead in NocoDB",
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        80,
+        0
+      ],
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "resource": "row",
+        "operation": "create",
+        "version": 3,
+        "workspaceId": "wgh5kblj",
+        "projectId": "ps9dj2fqrh823av",
+        "table": "m5lcgc5ifeqh38h",
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "ad_soyad",
+              "fieldValue": "={{ $json.ad_soyad }}"
+            },
+            {
+              "fieldName": "email",
+              "fieldValue": "={{ $json.email }}"
+            },
+            {
+              "fieldName": "telefon",
+              "fieldValue": "={{ $json.telefon }}"
+            },
+            {
+              "fieldName": "sirket_adi",
+              "fieldValue": "={{ $json.sirket_adi }}"
+            },
+            {
+              "fieldName": "sektor",
+              "fieldValue": "={{ $json.sektor }}"
+            },
+            {
+              "fieldName": "konum",
+              "fieldValue": "={{ $json.konum }}"
+            },
+            {
+              "fieldName": "kaynak",
+              "fieldValue": "={{ $json.kaynak }}"
+            },
+            {
+              "fieldName": "asama",
+              "fieldValue": "={{ $json.asama }}"
+            },
+            {
+              "fieldName": "lead_skoru",
+              "fieldValue": "={{ $json.lead_skoru }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "REDACTED",
+          "name": "NocoDB Token account 2"
+        }
+      }
+    },
+    {
+      "id": "633278eb-664c-46cf-b928-935d9822f3c5",
+      "name": "Is Hot or Warm",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.asama }}",
+              "rightValue": "Sicak",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.asama }}",
+              "rightValue": "Ilik",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "5a4d99b9-c2ea-4864-b9fe-ca2d6ed718df",
+      "name": "Send Hot Lead Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        -16
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "seymaakrs@gmail.com",
+        "subject": "=SICAK LEAD: {{ $json.ad_soyad }} - {{ $json.sirket_adi }} (Skor: {{ $json.lead_skoru }}/100)",
+        "emailType": "html",
+        "message": "=<h2>Yeni Sicak/Ilik Lead Geldi!</h2> <p><b>Ad Soyad:</b> {{ $json.ad_soyad }}</p> <p><b>Sirket:</b> {{ $json.sirket_adi }}</p> <p><b>Email:</b> {{ $json.email }}</p> <p><b>Telefon:</b> {{ $json.telefon }}</p> <p><b>Kaynak:</b> {{ $json.kaynak }}</p> <p><b>Sektor:</b> {{ $json.sektor }}</p> <p><b>Asama:</b> {{ $json.asama }}</p> <p><b>Konum:</b> {{ $json.konum }}</p> <p><b>Lead Skoru:</b> {{ $json.lead_skoru }}/100</p> <hr> <p><b>HEMEN ARAYIN!</b></p>",
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REDACTED",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "e709b8df-ead3-4b06-ad7a-16dd4960d5ee"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Calculate Lead Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Lead Score": {
+      "main": [
+        [
+          {
+            "node": "Create Lead in NocoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Lead in NocoDB": {
+      "main": [
+        [
+          {
+            "node": "Is Hot or Warm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Hot or Warm": {
+      "main": [
+        [
+          {
+            "node": "Send Hot Lead Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true
+  },
+  "versionId": "6481c792-82cb-474f-8d87-e1f36b2a3cc8",
+  "activeVersionId": "6481c792-82cb-474f-8d87-e1f36b2a3cc8",
+  "versionCounter": 169,
+  "triggerCount": 1,
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-23T11:21:35.000Z",
+    "createdAt": "2026-04-23T11:20:08.752Z",
+    "versionId": "6481c792-82cb-474f-8d87-e1f36b2a3cc8",
+    "workflowId": "l31p16NRZeyk4eEm",
+    "nodes": [
+      {
+        "id": "a385505a-f56b-40e8-b5c7-256c1c2efdc6",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -400,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "lead-toplama",
+          "options": {}
+        },
+        "webhookId": "0f6561d3-5e21-4a82-82e1-6c1bdf88b1ef"
+      },
+      {
+        "id": "76e20e87-4b9b-4124-a6ee-365669247bfb",
+        "name": "Calculate Lead Score",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -160,
+          0
+        ],
+        "parameters": {
+          "jsCode": "const item = $input.first().json.body || $input.first().json;\nlet skor = 0;\n\nconst hedefSektorler = ['Otelcilik', 'Yeme-Icme', 'Turizm', 'Spa-Wellness'];\nif (hedefSektorler.includes(item.sektor)) skor += 20;\nelse if (item.sektor && item.sektor !== 'Diger') skor += 10;\n\nconst hedefKonumlar = ['Bodrum', 'Marmaris', 'Fethiye', 'Datca', 'Gocek'];\nif (hedefKonumlar.some(k => (item.konum || '').includes(k))) skor += 15;\nelse if ((item.konum || '').includes('Mugla')) skor += 10;\n\nif (item.kaynak === 'Meta Ads') skor += 25;\nelse if (item.kaynak === 'Clay') skor += 15;\nelse if (item.kaynak === 'LinkedIn') skor += 15;\nelse if (item.kaynak === 'IG DM') skor += 10;\nelse if (item.kaynak === 'Manuel') skor += 5;\n\nif (item.asama === 'Sicak') skor += 30;\nelse if (item.asama === 'Ilik') skor += 20;\nelse if (item.asama === 'Yeni') skor += 5;\n\nconst validSectors = ['Otelcilik','Yeme-Icme','Perakende','Turizm','E-ticaret','Tekne-Yat','Emlak','Spa-Wellness','Doktor-Uzman','Koc-Egitmen','Kurumsal-Kamu','Butik-Moda','Kafe','Restoran','Diger'];\nconst sektorClean = validSectors.includes(item.sektor) ? item.sektor : 'Diger';\n\nreturn [{json: {\n  ad_soyad: item.ad_soyad || '',\n  email: item.email || '',\n  telefon: item.telefon || '',\n  sirket_adi: item.sirket_adi || '',\n  sektor: sektorClean,\n  konum: item.konum || '',\n  kaynak: item.kaynak || 'Manuel',\n  asama: item.asama || 'Yeni',\n  lead_skoru: skor\n}}];"
+        }
+      },
+      {
+        "id": "b88deae4-0924-4488-a77f-41dd7497c9b1",
+        "name": "Create Lead in NocoDB",
+        "type": "n8n-nodes-base.nocoDb",
+        "typeVersion": 3,
+        "position": [
+          80,
+          0
+        ],
+        "parameters": {
+          "authentication": "nocoDbApiToken",
+          "resource": "row",
+          "operation": "create",
+          "version": 3,
+          "workspaceId": "wgh5kblj",
+          "projectId": "ps9dj2fqrh823av",
+          "table": "m5lcgc5ifeqh38h",
+          "dataToSend": "defineBelow",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldName": "ad_soyad",
+                "fieldValue": "={{ $json.ad_soyad }}"
+              },
+              {
+                "fieldName": "email",
+                "fieldValue": "={{ $json.email }}"
+              },
+              {
+                "fieldName": "telefon",
+                "fieldValue": "={{ $json.telefon }}"
+              },
+              {
+                "fieldName": "sirket_adi",
+                "fieldValue": "={{ $json.sirket_adi }}"
+              },
+              {
+                "fieldName": "sektor",
+                "fieldValue": "={{ $json.sektor }}"
+              },
+              {
+                "fieldName": "konum",
+                "fieldValue": "={{ $json.konum }}"
+              },
+              {
+                "fieldName": "kaynak",
+                "fieldValue": "={{ $json.kaynak }}"
+              },
+              {
+                "fieldName": "asama",
+                "fieldValue": "={{ $json.asama }}"
+              },
+              {
+                "fieldName": "lead_skoru",
+                "fieldValue": "={{ $json.lead_skoru }}"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "nocoDbApiToken": {
+            "id": "REDACTED",
+            "name": "NocoDB Token account 2"
+          }
+        }
+      },
+      {
+        "id": "633278eb-664c-46cf-b928-935d9822f3c5",
+        "name": "Is Hot or Warm",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          320,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.asama }}",
+                "rightValue": "Sicak",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              },
+              {
+                "id": "c2",
+                "leftValue": "={{ $json.asama }}",
+                "rightValue": "Ilik",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        }
+      },
+      {
+        "id": "5a4d99b9-c2ea-4864-b9fe-ca2d6ed718df",
+        "name": "Send Hot Lead Alert",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          560,
+          -16
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "send",
+          "sendTo": "seymaakrs@gmail.com",
+          "subject": "=SICAK LEAD: {{ $json.ad_soyad }} - {{ $json.sirket_adi }} (Skor: {{ $json.lead_skoru }}/100)",
+          "emailType": "html",
+          "message": "=<h2>Yeni Sicak/Ilik Lead Geldi!</h2> <p><b>Ad Soyad:</b> {{ $json.ad_soyad }}</p> <p><b>Sirket:</b> {{ $json.sirket_adi }}</p> <p><b>Email:</b> {{ $json.email }}</p> <p><b>Telefon:</b> {{ $json.telefon }}</p> <p><b>Kaynak:</b> {{ $json.kaynak }}</p> <p><b>Sektor:</b> {{ $json.sektor }}</p> <p><b>Asama:</b> {{ $json.asama }}</p> <p><b>Konum:</b> {{ $json.konum }}</p> <p><b>Lead Skoru:</b> {{ $json.lead_skoru }}/100</p> <hr> <p><b>HEMEN ARAYIN!</b></p>",
+          "options": {}
+        },
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "REDACTED",
+            "name": "Gmail account"
+          }
+        },
+        "webhookId": "e709b8df-ead3-4b06-ad7a-16dd4960d5ee"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Calculate Lead Score",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculate Lead Score": {
+        "main": [
+          [
+            {
+              "node": "Create Lead in NocoDB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Lead in NocoDB": {
+        "main": [
+          [
+            {
+              "node": "Is Hot or Warm",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Hot or Warm": {
+        "main": [
+          [
+            {
+              "node": "Send Hot Lead Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "şeyma karaş",
+    "name": "Version 6481c792",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-23T11:21:34.958Z",
+        "id": 54,
+        "workflowId": "l31p16NRZeyk4eEm",
+        "versionId": "6481c792-82cb-474f-8d87-e1f36b2a3cc8",
+        "event": "activated",
+        "userId": "46f2a292-2b89-45ea-9175-f0b2d79cf9a0"
+      }
+    ]
+  }
+}
