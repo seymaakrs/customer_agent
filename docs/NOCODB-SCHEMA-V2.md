@@ -46,14 +46,14 @@ URL:       http://34.26.138.196
 | `telefon` | PhoneNumber | ❌ | ❌ | Telefon |
 | `sirket_adi` | SingleLineText | ❌ | ❌ | Şirket |
 | `pozisyon` | SingleLineText | ❌ | ❌ | Lead'in şirketteki pozisyonu |
-| `sektor` | SingleSelect | ❌ | ❌ | `Otelcilik`, `Restoran`, `Cafe`, `Perakende`, `Turizm`, `E-ticaret`, `Yeme-Icme`, `Karma`, `Marina`, `LINAM`, `Diger` |
+| `sektor` | SingleSelect | ❌ | ❌ | `Otelcilik`, `Yeme-Icme`, `Perakende`, `Turizm`, `E-ticaret`, `Tekne-Yat`, `Emlak`, `Spa-Wellness`, `Doktor-Uzman`, `Koc-Egitmen`, `Kurumsal-Kamu`, `Butik-Moda`, `Kafe`, `Restoran`, `Diger` |
 | `konum` | SingleLineText | ❌ | ❌ | Şehir / ilçe |
 | `web_sitesi` | URL | ❌ | ❌ | |
 | `instagram` | SingleLineText | ❌ | ❌ | @handle |
 | `linkedin_url` | URL | ❌ | ❌ | |
 | `google_puani` | Number | ❌ | ❌ | Google işletme yıldız puanı |
-| `kaynak` | SingleSelect | ✅ | ❌ | `Meta`, `LinkedIn`, `Clay`, `IG DM`, `Referans`, `Manuel`, `WhatsApp` |
-| `asama` | SingleSelect | ✅ | ❌ | `Yeni`, `Soguk`, `Ilik`, `Sicak`, `Teklif`, `Kazanildi`, `Kayip`, `Diger` |
+| `kaynak` | SingleSelect | ✅ | ❌ | `LinkedIn`, `Meta Ads`, `Clay`, `IG DM`, `TikTok DM`, `Referans`, `Manuel` (Beyza'nın canlı option listesi — `Meta` değil `Meta Ads`!) |
+| `asama` | SingleSelect | ✅ | ❌ | `Yeni`, `Soguk`, `Ilik`, `Sicak`, `Teklif`, `Sozlesme`, `Kazanildi`, `Kayip`, `Arsiv` |
 | `lead_skoru` | Number | ⭕ | ❌ | 0-100 |
 | `ihtiyac_notu` | LongText | ❌ | ❌ | Lead ne istiyor |
 | `atanan_kisi` | SingleLineText | ❌ | ❌ | Hangi satışçı (örn. "seyma") |
