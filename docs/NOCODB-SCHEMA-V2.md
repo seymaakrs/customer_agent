@@ -79,9 +79,11 @@ URL:       http://34.26.138.196
 | `external_message_id` | SingleLineText | ❌ | ✅ | Platform mesaj ID (örn. WhatsApp `wamid.HBgM...`), idempotency |
 | `lead_adi` | SingleLineText | ✅ | ❌ | Leadler.ad_soyad ile string match (FK yok!) |
 | `tarih` | DateTime | ✅ | ❌ | UTC ISO8601 |
-| `kanal` | SingleSelect | ✅ | ❌ | `LinkedIn`, `IG`, `WhatsApp`, `Email`, `SMS`, `Meta`, `Internal` (bildirim için) |
-| `yon` | SingleSelect | ✅ | ❌ | `gelen`, `giden` |
-| `tur` | SingleSelect | ❌ | ❌ | `mesaj`, `bildirim`, `arama_notu`, `itiraz`, `takip` |
+| `kanal` | SingleSelect | ✅ | ❌ | `LinkedIn`, `Email`, `WhatsApp`, `IG DM`, `TikTok DM`, `Telefon`, `Meta Form`, `Yuz Yuze` (Beyza'nın canlı option listesi) |
+| `yon` | SingleSelect | ✅ | ❌ | `Giden`, `Gelen` (BÜYÜK harf!) |
+| `tur` | SingleSelect | ❌ | ❌ | `Baglanti Istegi`, `Ilk Mesaj`, `Takip Mesaji`, `Itiraz Karsilama`, `Discovery Call`, `Teklif`, `Yanit` |
+| `sonuc` | SingleSelect | ❌ | ❌ | `Yanit Bekleniyor`, `Olumlu Yanit`, `Olumsuz Yanit`, `Itiraz`, `Soru Sordu`, `Gorusme Planlandi` |
+| `agent` | SingleSelect | ❌ | ❌ | `LinkedIn Agent`, `Meta Agent`, `Clay Agent`, `DM Bot`, `Takip Agent`, `Itiraz Agent`, `Seyma` |
 | `mesaj_icerigi` | LongText | ✅ | ❌ | İçerik |
 | `sonuc` | SingleSelect | ❌ | ❌ | `cevapsiz`, `cevap_alindi`, `randevu`, `ilgisiz` |
 | `agent` | SingleSelect | ❌ | ❌ | `meta`, `takip`, `itiraz`, `upsell`, `referans`, `manuel` |
