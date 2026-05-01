@@ -61,20 +61,22 @@
 - Tablolar aktif: `leads`, `lead_messages`, `seyma_notifications` (semasi master doc'ta)
 - API token + URL kullanicida
 
-## Mevcut Durak Noktasi (2026-05-01, 11:06 UTC)
-**🟢 Mind Sales OS PRODUCTION'DA. End-to-end çalışıyor. İdempotency KANITLANDI.**
+## Mevcut Durak Noktasi (2026-05-01, 13:27 UTC)
+**🟢 Mind Sales OS PRODUCTION'DA. Beyza'nın canlı `Leadler` + `Etkilesimler` tablolarına yazıyor. End-to-end yeşil, idempotency kanıtlandı.**
 
-- Cloud Run `agents-sdk-api` revision **`agents-sdk-api-00009-667`** (v1.20.0) %100 trafik
-- /task → orchestrator → meta_agent_tool → upsert_lead → NocoDB (live test ile doğrulandı)
-- Aynı external_id ile 2 task → NocoDB'de 1 kayıt (idempotency garantisi kanıtlandı)
-- Bu session'da Burak'tan miras 3 büyük sorun da çözüldü: Firebase service account key, OpenAI key, NocoDB v2 ARRAY body bug
-- Meta Lead Ads workflow App Review onayına kadar PAUSED (planlı park)
+- Cloud Run `agents-sdk-api` revision **`agents-sdk-api-00012-gln`** (v1.21.2) %100 trafik
+- mind-agent kod tabanı Beyza'nın canlı NocoDB şemasına TAM hizalı (Türkçe alan adları, gerçek SingleSelect option'ları)
+- /task → orchestrator → meta_agent → upsert_lead → Leadler.v1212_smoke (Id 36) — atanan_kisi=Seyma + 2 timestamp'li bildirim notu
+- Etkilesimler'de 3 mesaj (Ilk Mesaj × 2, Takip Mesaji) — Meta Form / Gelen / Meta Agent option'larıyla
+- n8n 7 workflow JSON `n8n/workflows/` altında cold backup
+- Zernio Inbox webhook bağlandı (Beyza'nın workflow'unun Calculate Lead Score code node'u Zernio payload mapping yapmıyor — ayrı iş)
+- Meta Lead Ads workflow gerçekte ACTIVE (DEVIR notu PAUSED diyordu, Beyza son güncelleme 29 Nis)
 
-**Kalan iş (kullanıcı aksiyonları, ~25 dk):**
-1. Güvenlik temizliği: OpenAI key revoke + repo'daki credential dosyalarını sil
-2. Zernio Inbox addon webhook URL → n8n Lead Toplama Agent'a bağla
-3. n8n 5 workflow JSON export → `customer_agent/n8n/workflows/` altına commit
-4. mind-id `/satis` sekmesi E2E test
+**Kalan iş (kullanıcı aksiyonları):**
+1. Zernio→n8n payload mapping bug fix (Lead Toplama Agent → Calculate Lead Score code node)
+2. Güvenlik temizliği: OpenAI rotate + repo credentials sil + claude-setup/claude-status token revoke
+3. mind-id `/satis` sekmesi E2E test
+4. Eksik 3 workflow (LinkedIn / Clay / IG DM bot)
 
 **Tüm detaylar:** `docs/DEVIR-2026-05-01.md`
 
