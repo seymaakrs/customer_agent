@@ -5,6 +5,25 @@
 
 ---
 
+## 🟢 STATUS: 2026-05-01 — Backend %100, kalan kullanıcı aksiyonları
+
+**✅ Tamamlananlar (bu checklist'teki adım numaralarına göre):**
+- T-60dk: NocoDB migration ✅, mind-agent token ✅, kod merge ✅
+- T-30dk: Contract test (creds varsa yeşil olur), idempotency canlı kanıtlandı ✅
+- T-15dk: mind-agent v1.20.0 deploy ✅ (revision 00009-667)
+- T-0: 4 active workflow (Lead Toplama, Takip, İtiraz, Upsell) zaten ACTIVE; Meta Lead Ads PAUSED (App Review)
+- T+15dk: Sahte lead /task → NocoDB'ye yazıldı ✅ + ikinci POST upsert oldu ✅
+
+**⏳ Kalan kullanıcı aksiyonları:**
+- 🔒 Güvenlik temizliği (OpenAI key rotate, repo'daki credential dosyalarını sil)
+- 🔗 Zernio Inbox addon webhook URL bind
+- 📦 n8n 5 workflow JSON'ını repo'ya export
+- 🖥 mind-id /satis sekmesi E2E test
+
+Aşağıdaki orijinal checklist referans olarak kalır; "T-60dk" → "T+15dk" arası fiilen tamamlandı.
+
+---
+
 ## T-60dk · Hazırlık
 
 - [ ] **NocoDB UI migration tamam** (`scripts/nocodb_migration_v2.md` adımları)

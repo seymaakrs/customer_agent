@@ -61,14 +61,22 @@
 - Tablolar aktif: `leads`, `lead_messages`, `seyma_notifications` (semasi master doc'ta)
 - API token + URL kullanicida
 
-## Mevcut Durak Noktasi (2026-05-01)
-**Mind Sales OS deploy edildi. Smoke test'te kaldık.**
+## Mevcut Durak Noktasi (2026-05-01, 11:06 UTC)
+**🟢 Mind Sales OS PRODUCTION'DA. End-to-end çalışıyor. İdempotency KANITLANDI.**
 
-- Cloud Run `agents-sdk-api` revision **`agents-sdk-api-00005-j5b`** (v1.19.0) %100 trafik alıyor
-- NocoDB 3 tablo + tüm kolonlar yerinde, mind-agent token READ+WRITE çalışıyor
-- Sıradaki: smoke test (`/docs` 200 mu, sales tools yüklendi mi) → idempotency canlı testi → Zernio webhook bind → n8n JSON export
+- Cloud Run `agents-sdk-api` revision **`agents-sdk-api-00009-667`** (v1.20.0) %100 trafik
+- /task → orchestrator → meta_agent_tool → upsert_lead → NocoDB (live test ile doğrulandı)
+- Aynı external_id ile 2 task → NocoDB'de 1 kayıt (idempotency garantisi kanıtlandı)
+- Bu session'da Burak'tan miras 3 büyük sorun da çözüldü: Firebase service account key, OpenAI key, NocoDB v2 ARRAY body bug
 - Meta Lead Ads workflow App Review onayına kadar PAUSED (planlı park)
-- Tüm detaylar + rollback notu: `docs/DEVIR-2026-05-01.md`
+
+**Kalan iş (kullanıcı aksiyonları, ~25 dk):**
+1. Güvenlik temizliği: OpenAI key revoke + repo'daki credential dosyalarını sil
+2. Zernio Inbox addon webhook URL → n8n Lead Toplama Agent'a bağla
+3. n8n 5 workflow JSON export → `customer_agent/n8n/workflows/` altına commit
+4. mind-id `/satis` sekmesi E2E test
+
+**Tüm detaylar:** `docs/DEVIR-2026-05-01.md`
 
 ## Buyuk Hedef Sirasi
 1. **Once mimariyi tamamla** — n8n'deki tum agent workflow'lari calisir hale getir (mevcut hedef)
