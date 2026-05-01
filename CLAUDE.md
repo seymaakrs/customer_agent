@@ -1,6 +1,8 @@
 # Customer Agent - Claude Session Hafizasi
 
 > **HER YENI SESSION BASLANGICINDA OKU.** Bu dosya ve `SESSION_NOTES.md` projenin kalici hafizasidir.
+>
+> ⚡ **ÖNCE OKU:** [`docs/DEVIR-2026-05-01.md`](docs/DEVIR-2026-05-01.md) — En son durum, kritik sabitler (tablo ID'leri, revision ID'leri, rollback komutu), bağımlılık sırası, kullanıcı tercihleri. Bu dosya yeni session'ın "kaldığı yerden devam" rehberidir.
 
 ## Proje Ozeti
 
@@ -59,8 +61,14 @@
 - Tablolar aktif: `leads`, `lead_messages`, `seyma_notifications` (semasi master doc'ta)
 - API token + URL kullanicida
 
-## Mevcut Durak Noktasi
-**Meta Ads Agent workflow'unda kalindi** (n8n'de). Devam etmek icin kullanici hazir.
+## Mevcut Durak Noktasi (2026-05-01)
+**Mind Sales OS deploy edildi. Smoke test'te kaldık.**
+
+- Cloud Run `agents-sdk-api` revision **`agents-sdk-api-00005-j5b`** (v1.19.0) %100 trafik alıyor
+- NocoDB 3 tablo + tüm kolonlar yerinde, mind-agent token READ+WRITE çalışıyor
+- Sıradaki: smoke test (`/docs` 200 mu, sales tools yüklendi mi) → idempotency canlı testi → Zernio webhook bind → n8n JSON export
+- Meta Lead Ads workflow App Review onayına kadar PAUSED (planlı park)
+- Tüm detaylar + rollback notu: `docs/DEVIR-2026-05-01.md`
 
 ## Buyuk Hedef Sirasi
 1. **Once mimariyi tamamla** — n8n'deki tum agent workflow'lari calisir hale getir (mevcut hedef)
