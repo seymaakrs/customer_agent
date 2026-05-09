@@ -119,12 +119,24 @@ def main() -> None:
     else:
         print("      All field mappings already present")
 
-    # n8n public PUT only accepts these top-level keys.
+    # n8n public PUT only accepts these top-level keys, and `settings` only
+    # allows a whitelist of properties (binaryMode/availableInMCP rejected).
+    allowed_settings = {
+        "saveExecutionProgress",
+        "saveManualExecutions",
+        "saveDataErrorExecution",
+        "saveDataSuccessExecution",
+        "executionTimeout",
+        "errorWorkflow",
+        "timezone",
+        "executionOrder",
+    }
+    settings = {k: v for k, v in (wf.get("settings") or {}).items() if k in allowed_settings}
     payload = {
         "name": wf["name"],
         "nodes": wf["nodes"],
         "connections": wf["connections"],
-        "settings": wf.get("settings", {}),
+        "settings": settings,
     }
     if "staticData" in wf and wf["staticData"] is not None:
         payload["staticData"] = wf["staticData"]
