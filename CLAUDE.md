@@ -107,6 +107,7 @@ mind-id/             Next.js admin paneli (UI ve n8n proxy)
 5. **Belirsiz bir sey varsa:** VARSAYIM YAPMA, kullaniciya sor.
 6. **Kullaniciya soracagin sey hakkinda:** Sadece projeye ait bilgi sor. Yetki, hesap, sifre vb. icin sorma — kullanicinin tum yetkileri var.
 7. Kullanici yeni mezun bir yazilim muhendisi gibi davranir — kavramlari acikla, surece dahil et.
+8. **ROLLBACK ZORUNLU (kullanici kalici karari, 2026-05-15):** Canli/geri-donulmesi zor HER degisiklikten ONCE mevcut hali repoya yedekle (n8n workflow → `n8n/backups/<ad>.<tarih>.pre-<degisiklik>.json`; kod → commit). Yedek + nasil geri donulecegi devir notuna YAZILACAK. Silme yerine geri-donulebilir yontem tercih et (n8n: hard-delete degil archive). "Her zaman bu haline geri donebilelim" sarttir.
 
 ## n8n Workflow Envanteri (Session 3 — 2026-04-28)
 
