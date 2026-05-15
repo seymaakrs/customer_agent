@@ -25,8 +25,21 @@
     },
     {
       "parameters": {
+        "jsCode": "// v2 — Zernio uyumlu itiraz normalize (2026-05-15)\n// Payload sekilleri:\n//   A) Generic: { mesaj, musteri_email, musteri_adi? }\n//   B) Zernio message.received: body.message.sender.{name,phoneNumber}, body.message.text\n//   C) Zernio comment.received: body.comment.author.{name,username}, body.comment.text\nconst raw = $input.first().json.body || $input.first().json;\nlet mesaj = '', musteri_email = '', musteri_adi = '', kaynak = 'Manuel', external_id = '';\n\nif (raw && raw.message && (raw.message.text || (raw.message.sender && raw.message.sender.name))) {\n  const m = raw.message; const s = m.sender || {};\n  mesaj = m.text || m.body || '';\n  musteri_adi = s.name || s.fullName || '';\n  musteri_email = s.email || '';\n  kaynak = 'IG DM';\n  external_id = raw.conversationId || m.id || '';\n} else if (raw && raw.comment && raw.comment.author) {\n  const c = raw.comment; const a = c.author || {};\n  mesaj = c.text || '';\n  musteri_adi = a.name || a.username || '';\n  kaynak = 'IG DM';\n  external_id = c.id || '';\n} else {\n  mesaj = raw.mesaj || raw.message || '';\n  musteri_email = raw.musteri_email || raw.email || '';\n  musteri_adi = raw.musteri_adi || raw.ad_soyad || raw.name || '';\n  kaynak = raw.kaynak || 'Manuel';\n  external_id = raw.external_id || '';\n}\n\n// Bos itiraz korumasi — mesaj da kimlik de yoksa NocoDB'ye yazma / mail atma\nif (!mesaj && !musteri_email && !musteri_adi) {\n  return [];\n}\n\nreturn [{ json: { mesaj, musteri_email, musteri_adi, kaynak, external_id } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -344,
+        0
+      ],
+      "id": "b1e7d2c4-9a3f-4c11-8e22-0d5f6a7b8c90",
+      "name": "Normalize Payload"
+    },
+    {
+      "parameters": {
         "promptType": "define",
-        "text": "=Sen Mindid firmasinin satis asistanisin. Musteri su mesaji gonderdi: \"{{ $json.body.mesaj }}\"\n\nMusterinin hangi itirazi yaptigini tespit et (Fiyat / Erteleme / Rekabet / Olcek / Teknoloji / Kanit / Diger) ve profesyonel, samimi bir cevap yaz.\n\nCevabi JSON formatinda dondur:\n{\n  \"itiraz_turu\": \"...\",\n  \"cevap\": \"...\"\n}\n",
+        "text": "=Sen Mindid firmasinin satis asistanisin. Musteri su mesaji gonderdi: \"{{ $json.mesaj }}\"\n\nMusterinin hangi itirazi yaptigini tespit et (Fiyat / Erteleme / Rekabet / Olcek / Teknoloji / Kanit / Diger) ve profesyonel, samimi bir cevap yaz.\n\nCevabi JSON formatinda dondur:\n{\n  \"itiraz_turu\": \"...\",\n  \"cevap\": \"...\"\n}\n",
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
@@ -59,7 +72,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const webhookData = $('Webhook').first().json.body;\nconst geminiText = $input.first().json.text;\n\n// Gemini cevabindan JSON parse et (```json ... ``` temizle)\nlet parsed = {};\ntry {\n  const cleaned = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { itiraz_turu: 'Diger', cevap: geminiText };\n}\n\nreturn [{\n  json: {\n    musteri_email: webhookData.musteri_email || '',\n    musteri_mesaji: webhookData.mesaj || '',\n    itiraz_turu: parsed.itiraz_turu || 'Diger',\n    cevap: parsed.cevap || '',\n    tarih: new Date().toISOString()\n  }\n}];\n"
+        "jsCode": "const n = $('Normalize Payload').first().json;\nconst geminiText = $input.first().json.text;\n\n// Gemini cevabindan JSON parse et (```json ... ``` temizle)\nlet parsed = {};\ntry {\n  const cleaned = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { itiraz_turu: 'Diger', cevap: geminiText };\n}\n\nreturn [{\n  json: {\n    lead_adi: n.musteri_adi || n.musteri_email || '',\n    musteri_email: n.musteri_email || '',\n    musteri_mesaji: n.mesaj || '',\n    itiraz_turu: parsed.itiraz_turu || 'Diger',\n    cevap: parsed.cevap || '',\n    tarih: new Date().toISOString()\n  }\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -81,7 +94,7 @@
           "fieldValues": [
             {
               "fieldName": "lead_adi",
-              "fieldValue": "={{ $json.musteri_email }}"
+              "fieldValue": "={{ $json.lead_adi }}"
             },
             {
               "fieldName": "itiraz_turu",
@@ -139,6 +152,17 @@
   ],
   "connections": {
     "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Payload": {
       "main": [
         [
           {
@@ -231,8 +255,21 @@
       },
       {
         "parameters": {
+          "jsCode": "// v2 — Zernio uyumlu itiraz normalize (2026-05-15)\n// Payload sekilleri:\n//   A) Generic: { mesaj, musteri_email, musteri_adi? }\n//   B) Zernio message.received: body.message.sender.{name,phoneNumber}, body.message.text\n//   C) Zernio comment.received: body.comment.author.{name,username}, body.comment.text\nconst raw = $input.first().json.body || $input.first().json;\nlet mesaj = '', musteri_email = '', musteri_adi = '', kaynak = 'Manuel', external_id = '';\n\nif (raw && raw.message && (raw.message.text || (raw.message.sender && raw.message.sender.name))) {\n  const m = raw.message; const s = m.sender || {};\n  mesaj = m.text || m.body || '';\n  musteri_adi = s.name || s.fullName || '';\n  musteri_email = s.email || '';\n  kaynak = 'IG DM';\n  external_id = raw.conversationId || m.id || '';\n} else if (raw && raw.comment && raw.comment.author) {\n  const c = raw.comment; const a = c.author || {};\n  mesaj = c.text || '';\n  musteri_adi = a.name || a.username || '';\n  kaynak = 'IG DM';\n  external_id = c.id || '';\n} else {\n  mesaj = raw.mesaj || raw.message || '';\n  musteri_email = raw.musteri_email || raw.email || '';\n  musteri_adi = raw.musteri_adi || raw.ad_soyad || raw.name || '';\n  kaynak = raw.kaynak || 'Manuel';\n  external_id = raw.external_id || '';\n}\n\n// Bos itiraz korumasi — mesaj da kimlik de yoksa NocoDB'ye yazma / mail atma\nif (!mesaj && !musteri_email && !musteri_adi) {\n  return [];\n}\n\nreturn [{ json: { mesaj, musteri_email, musteri_adi, kaynak, external_id } }];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -344,
+          0
+        ],
+        "id": "b1e7d2c4-9a3f-4c11-8e22-0d5f6a7b8c90",
+        "name": "Normalize Payload"
+      },
+      {
+        "parameters": {
           "promptType": "define",
-          "text": "=Sen Mindid firmasinin satis asistanisin. Musteri su mesaji gonderdi: \"{{ $json.body.mesaj }}\"\n\nMusterinin hangi itirazi yaptigini tespit et (Fiyat / Erteleme / Rekabet / Olcek / Teknoloji / Kanit / Diger) ve profesyonel, samimi bir cevap yaz.\n\nCevabi JSON formatinda dondur:\n{\n  \"itiraz_turu\": \"...\",\n  \"cevap\": \"...\"\n}\n",
+          "text": "=Sen Mindid firmasinin satis asistanisin. Musteri su mesaji gonderdi: \"{{ $json.mesaj }}\"\n\nMusterinin hangi itirazi yaptigini tespit et (Fiyat / Erteleme / Rekabet / Olcek / Teknoloji / Kanit / Diger) ve profesyonel, samimi bir cevap yaz.\n\nCevabi JSON formatinda dondur:\n{\n  \"itiraz_turu\": \"...\",\n  \"cevap\": \"...\"\n}\n",
           "batching": {}
         },
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
@@ -265,7 +302,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const webhookData = $('Webhook').first().json.body;\nconst geminiText = $input.first().json.text;\n\n// Gemini cevabindan JSON parse et (```json ... ``` temizle)\nlet parsed = {};\ntry {\n  const cleaned = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { itiraz_turu: 'Diger', cevap: geminiText };\n}\n\nreturn [{\n  json: {\n    musteri_email: webhookData.musteri_email || '',\n    musteri_mesaji: webhookData.mesaj || '',\n    itiraz_turu: parsed.itiraz_turu || 'Diger',\n    cevap: parsed.cevap || '',\n    tarih: new Date().toISOString()\n  }\n}];\n"
+          "jsCode": "const n = $('Normalize Payload').first().json;\nconst geminiText = $input.first().json.text;\n\n// Gemini cevabindan JSON parse et (```json ... ``` temizle)\nlet parsed = {};\ntry {\n  const cleaned = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { itiraz_turu: 'Diger', cevap: geminiText };\n}\n\nreturn [{\n  json: {\n    lead_adi: n.musteri_adi || n.musteri_email || '',\n    musteri_email: n.musteri_email || '',\n    musteri_mesaji: n.mesaj || '',\n    itiraz_turu: parsed.itiraz_turu || 'Diger',\n    cevap: parsed.cevap || '',\n    tarih: new Date().toISOString()\n  }\n}];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -345,6 +382,17 @@
     ],
     "connections": {
       "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Normalize Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Payload": {
         "main": [
           [
             {
