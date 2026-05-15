@@ -2,7 +2,7 @@
 
 > **HER YENI SESSION BASLANGICINDA OKU.** Bu dosya ve `SESSION_NOTES.md` projenin kalici hafizasidir.
 >
-> ⚡ **ÖNCE OKU:** [`docs/DEVIR-2026-05-01.md`](docs/DEVIR-2026-05-01.md) — En son durum, kritik sabitler (tablo ID'leri, revision ID'leri, rollback komutu), bağımlılık sırası, kullanıcı tercihleri. Bu dosya yeni session'ın "kaldığı yerden devam" rehberidir.
+> ⚡ **ÖNCE OKU:** [`docs/DEVIR-2026-05-14.md`](docs/DEVIR-2026-05-14.md) — EN SON durum (Faz A→D marka kimliği, Zernio fix, kalan iş listesi A1.1→D3, nerede kaldık). Sonra: `mind-agent/docs/ROLLBACK.md`, `mind-agent/CLAUDE.md`, eski `docs/DEVIR-2026-05-01.md`. Bu dosya yeni session'ın "kaldığı yerden devam" rehberidir.
 
 ## Proje Ozeti
 
