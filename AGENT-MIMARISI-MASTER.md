@@ -1,7 +1,7 @@
 # MINDID AGENT MIMARISI — ULTRA STRATEJIK ZINCIR SISTEMI
 **Tarih:** 29 Mart 2026
 **HEDEF:** 7 GUNDE 116.000 TL — HER AGENT BU HEDEFE HIZMET EDER
-**KURAL:** Her agent tek basina calisir ama hepsi tek bir noktada bulusur: AIRTABLE CRM → SEYMA → PARA
+**KURAL:** Her agent tek basina calisir ama hepsi tek bir noktada bulusur: NocoDB CRM → SEYMA → PARA
 
 ---
 
@@ -15,7 +15,7 @@
                     SEYMA (KAPANIS + ONAY)
                               ↑
                  ┌────────────┴────────────┐
-                 │     AIRTABLE CRM        │
+                 │     NocoDB CRM        │
                  │  (TEK BULUSMA NOKTASI)  │
                  └────────────┬────────────┘
                               ↑
@@ -40,7 +40,7 @@ ADIM 1: AV (Lead Bulma — 6 Agent Paralel)
   Clay Agent → yerel isletme tara → mesaj at
   DM Bot Agent → IG/TikTok yeni takipci → otomatik mesaj
   ↓
-  TUM LEADLER → AIRTABLE CRM'e duser (otomatik)
+  TUM LEADLER → NocoDB CRM'e duser (otomatik)
   ↓
 
 ADIM 2: ISINMA (Lead Takip — 2 Agent)
@@ -78,7 +78,7 @@ ADIM 4: SONRASI
      Pozisyon: Isletme Sahibi, CEO, GM, Pazarlama Muduru
      Sektor: Otelcilik, Yeme-Icme, Perakende, Turizm, E-ticaret
    → Gunluk 20 yeni profil bul
-   → Her profili Airtable'a kaydet (isim, sirket, pozisyon, sektor, LinkedIn URL)
+   → Her profili NocoDB'a kaydet (isim, sirket, pozisyon, sektor, LinkedIn URL)
 
 2. BAGLANTI ISTEGI (bulunca hemen)
    → Kisisellestirilmis not ile baglanti iste:
@@ -100,12 +100,12 @@ ADIM 4: SONRASI
    Merak ederseniz buradayim. mindid.shop"
 
 4. YANITLARI ISLE
-   → Olumlu yanit → Airtable'da "Ilik" yap → Seyma'ya ANINDA bildirim
-   → Soru sordu → Cevapla (itiraz rehberine bak) → Airtable guncelle
-   → Olumsuz → Airtable'da "Kayip" yap → 30 gun sonra tekrar dene
+   → Olumlu yanit → NocoDB'da "Ilik" yap → Seyma'ya ANINDA bildirim
+   → Soru sordu → Cevapla (itiraz rehberine bak) → NocoDB guncelle
+   → Olumsuz → NocoDB'da "Kayip" yap → 30 gun sonra tekrar dene
 
 5. CRM KAYIT (her islemde)
-   → Airtable'a yaz: isim, sirket, asama, mesaj durumu, tarih, not
+   → NocoDB'a yaz: isim, sirket, asama, mesaj durumu, tarih, not
 ```
 
 ### Performans Hedefi:
@@ -134,7 +134,7 @@ ADIM 4: SONRASI
    → CPL > 50 TL → kampanyayi durdur, analiz yap
 
 2. LEAD ISLE (aninda)
-   → Meta lead form dolduran → ANINDA Airtable'a yaz
+   → Meta lead form dolduran → ANINDA NocoDB'a yaz
    → Otomatik bildirim Seyma'ya (WhatsApp/Email)
    → Lead skoru hesapla ve ata
 
@@ -148,7 +148,7 @@ ADIM 4: SONRASI
    → Toplam erisim / tiklanma / lead sayisi
    → En iyi performans gosteren reklam
    → Ertesi gun onerisi
-   → Airtable'a rapor kaydi
+   → NocoDB'a rapor kaydi
 ```
 
 ---
@@ -178,7 +178,7 @@ ADIM 4: SONRASI
    → Instagram DM (hemen)
    → LinkedIn (agent 1 ile koordineli)
 
-4. AIRTABLE'A KAYDET
+4. NocoDB'A KAYDET
    → Her isletme = 1 lead kaydi
    → Kaynak: Clay
    → Ihtiyac notu: ne mesaj gonderildi
@@ -208,7 +208,7 @@ ADIM 4: SONRASI
    3. En cok hangi konuda desteGe ihtiyaciniz var?"
 
 3. BILGI GELINCE → CRM'E YAZ
-   → Airtable'a kaydet: isim, isletme, ihtiyac, kaynak: IG DM
+   → NocoDB'a kaydet: isim, isletme, ihtiyac, kaynak: IG DM
    → Lead skoru ata
    → "Ilik" olarak isaretle
    → Seyma'ya bildirim
@@ -228,7 +228,7 @@ ADIM 4: SONRASI
 
 ### Gorev Zinciri:
 ```
-1. AIRTABLE'I TARA (her 6 saatte)
+1. NocoDB'I TARA (her 6 saatte)
    → "Soguk" veya "Ilik" asamadaki leadleri kontrol et
    → Son iletisimden bu yana gecen sure hesapla
 
@@ -244,7 +244,7 @@ ADIM 4: SONRASI
    → LinkedIn gitti, yanit yok → Instagram DM dene
    → Hicbiri olmadi → Telefon listesine ekle (Seyma arar)
 
-4. AIRTABLE GUNCELLE (her islemde)
+4. NocoDB GUNCELLE (her islemde)
    → Son iletisim tarihi
    → Kac takip yapildi
    → Hangi kanallar denendi
@@ -278,7 +278,7 @@ ADIM 4: SONRASI
 3. ESKALASYON (gerekirse)
    → 2 itiraz karsilamadan sonra hala olumsuz →
      Seyma'ya bildir: "Bu lead 2 kez itiraz etti, kisisel mudahale gerekli"
-   → Airtable'a not: itiraz turu + karsilama + sonuc
+   → NocoDB'a not: itiraz turu + karsilama + sonuc
 
 4. OGRENIM
    → Her itiraz + karsilama + sonucu kaydet
@@ -293,21 +293,21 @@ ADIM 4: SONRASI
 ```
 LINKEDIN AGENT ──┐
 META AGENT ──────┤
-CLAY AGENT ──────┼──→ AIRTABLE CRM ──→ TAKIP AGENT ──→ SEYMA
+CLAY AGENT ──────┼──→ NocoDB CRM ──→ TAKIP AGENT ──→ SEYMA
 DM BOT AGENT ────┤         ↑                ↓
                  │    ITIRAZ AGENT ←── Musteri itirazi
                  │         ↓
-                 │    AIRTABLE GUNCELLE
+                 │    NocoDB GUNCELLE
                  │         ↓
                  └──→ 116.000 TL
 ```
 
 **Veri akisi:**
-1. 6 agent paralel lead bulur → Airtable'a yazar
+1. 6 agent paralel lead bulur → NocoDB'a yazar
 2. Takip agent yanit vermeyenleri kovalar
 3. Itiraz agent olumsuz yanitlari karsilar
 4. Sicak lead → Seyma bildirim → Discovery call → Teklif → PARA
-5. Her islem Airtable'da izlenir → Gunluk rapor → Optimizasyon
+5. Her islem NocoDB'da izlenir → Gunluk rapor → Optimizasyon
 
 ---
 
@@ -315,13 +315,13 @@ DM BOT AGENT ────┤         ↑                ↓
 
 | # | Workflow | Tetikleyici | Cikti |
 |---|----------|-------------|-------|
-| 1 | LinkedIn → Airtable | Yeni lead bulundu | CRM kayit |
-| 2 | Meta Lead Form → Airtable | Form doldu | CRM kayit + Seyma bildirim |
-| 3 | Clay → Airtable | Isletme tarandi | CRM kayit |
-| 4 | IG DM → Airtable | "EVET" yazildi | CRM kayit |
-| 5 | Airtable → Takip mesaji | 48 saat gecti | Otomatik mesaj |
-| 6 | Airtable → Itiraz karsilama | Itiraz keylord tespit | Otomatik cevap |
-| 7 | Airtable → Seyma bildirim | Lead "Sicak" oldu | WhatsApp/Email bildirim |
+| 1 | LinkedIn → NocoDB | Yeni lead bulundu | CRM kayit |
+| 2 | Meta Lead Form → NocoDB | Form doldu | CRM kayit + Seyma bildirim |
+| 3 | Clay → NocoDB | Isletme tarandi | CRM kayit |
+| 4 | IG DM → NocoDB | "EVET" yazildi | CRM kayit |
+| 5 | NocoDB → Takip mesaji | 48 saat gecti | Otomatik mesaj |
+| 6 | NocoDB → Itiraz karsilama | Itiraz keylord tespit | Otomatik cevap |
+| 7 | NocoDB → Seyma bildirim | Lead "Sicak" oldu | WhatsApp/Email bildirim |
 | 8 | Gunluk rapor | Her gun 23:00 | Ozet rapor Seyma'ya |
 
 ---
@@ -349,5 +349,5 @@ DM BOT AGENT ────┤         ↑                ↓
 2. **HER LEAD DEGER. TEK BIR LEAD BILE KACIRMAK YOK.**
 3. **TAKIP AGENT DURMAZ. YANIT GELENE KADAR KOVALAR.**
 4. **ITIRAZ = FIRSAT. HER ITIRAZ BIR SATIS FIRSATIDIR.**
-5. **AIRTABLE = TEK GERCEK. ORADA OLMAYAN LEAD YOK DEMEKTIR.**
+5. **NocoDB = TEK GERCEK. ORADA OLMAYAN LEAD YOK DEMEKTIR.**
 6. **SEYMA SADECE KAPANIS YAPAR. GERISI AGENTLARIN ISI.**
