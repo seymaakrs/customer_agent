@@ -1,8 +1,12 @@
-.env
-.env.*
-.claude/
 __pycache__/
 *.py[cod]
+*.pyc
+
+.env
+.env.*
+.env.local
+
+.claude/
 
 # Secrets — never commit
 *credentials*.json
