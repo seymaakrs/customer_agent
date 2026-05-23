@@ -210,25 +210,6 @@
           "name": "Gmail account"
         }
       }
-    },
-    {
-      "id": "a1b2c3d4-e5f6-4789-89ab-cdef01234567",
-      "name": "Check Idempotency",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        40,
-        0
-      ],
-      "parameters": {
-        "jsCode": "// Workflow-level idempotency guard.\n// Looks up Leadler for an existing row with the same external_event_id;\n// if found, returns [] so downstream nodes (Create Lead) are not triggered.\n// If external_event_id is empty (legacy non-Zernio webhooks), passes through.\n// Belt-and-suspenders: DB-side unique constraint should also be added later,\n// but NocoDB 0.301.x SingleLineText un=true does not always materialize the\n// physical index. This guard is the portable safety net.\nconst item = $input.first().json;\nconst eid = item.external_event_id || '';\nif (!eid) {\n  return [{ json: item }];\n}\n\nconst cred = await this.getCredentials('nocoDbApiToken');\nconst host = (cred.host || '').replace(/\\/$/, '');\nconst url = `${host}/api/v2/tables/m5lcgc5ifeqh38h/records`\n  + `?where=${encodeURIComponent('(external_event_id,eq,' + eid + ')')}`\n  + `&limit=1`;\n\nlet exists = false;\ntry {\n  const res = await this.helpers.httpRequest({\n    method: 'GET',\n    url,\n    headers: { 'xc-token': cred.apiToken, 'Accept': 'application/json' },\n    json: true,\n  });\n  exists = ((res && res.list) || []).length > 0;\n} catch (err) {\n  // On lookup failure, fail OPEN (allow the write) so a transient NocoDB\n  // outage does not block fresh leads. Duplicates remain extremely unlikely\n  // in this window (Zernio retry interval > seconds).\n  console.log('Idempotency lookup failed; proceeding with insert:', err && err.message);\n  return [{ json: item }];\n}\n\nif (exists) {\n  // Drop the item silently — duplicate.\n  return [];\n}\nreturn [{ json: item }];\n"
-      },
-      "credentials": {
-        "nocoDbApiToken": {
-          "id": "REDACTED",
-          "name": "NocoDB Token account 2"
-        }
-      }
     }
   ],
   "connections": {
@@ -247,7 +228,7 @@
       "main": [
         [
           {
-            "node": "Check Idempotency",
+            "node": "Create Lead in NocoDB",
             "type": "main",
             "index": 0
           }
@@ -277,17 +258,6 @@
         [
           {
             "node": "Send Hot Lead Alert",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Idempotency": {
-      "main": [
-        [
-          {
-            "node": "Create Lead in NocoDB",
             "type": "main",
             "index": 0
           }

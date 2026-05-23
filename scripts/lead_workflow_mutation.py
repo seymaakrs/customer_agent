@@ -264,50 +264,32 @@ def mutate(wf):
         conns[1].append({"node": "Send Lead Error Alert", "type": "main", "index": 0})
         changed.append("connection: Create Lead [error] -> Send Lead Error Alert")
 
-    # Workflow-level idempotency guard. Inserted between Calculate Lead Score
-    # and Create Lead in NocoDB. Reuses Create Lead's NocoDB credential so the
-    # guard always points at the same backend.
-    cred_block = (create_node.get("credentials") or {}).get("nocoDbApiToken") or {}
-    cred_id = cred_block.get("id")
-    cred_name = cred_block.get("name") or "NocoDB"
-    if not cred_id:
-        raise SystemExit(
-            "Create Lead in NocoDB has no nocoDbApiToken credential — run "
-            "scripts/n8n_swap_nocodb_credential.py first."
-        )
+    # Workflow-level Code-node guard was tried (commit 6bdc711) but n8n Cloud
+    # Code v2 sandbox blocks `this.getCredentials` for nocoDbApiToken — the
+    # node throws at runtime. Idempotency is enforced at the DB layer instead
+    # (Postgres partial unique index — see docs/LEAD-IDEMPOTENCY-MIGRATION.md
+    # SQL fallback). Duplicates surface as Create Lead 422 -> existing
+    # onError=continueErrorOutput -> Send Lead Error Alert.
+    #
+    # If a previous run inserted the Check Idempotency node, remove it and
+    # restore direct Calculate Lead Score -> Create Lead in NocoDB wiring.
+    if any(n.get("name") == "Check Idempotency" for n in wf["nodes"]):
+        wf["nodes"] = [n for n in wf["nodes"] if n.get("name") != "Check Idempotency"]
+        wf["connections"].pop("Check Idempotency", None)
+        changed.append("- Check Idempotency Code node (removed; DB-level guard)")
 
-    if not any(n.get("name") == "Check Idempotency" for n in wf["nodes"]):
-        wf["nodes"].append(make_idempotency_node(cred_id, cred_name))
-        changed.append("+ Check Idempotency Code node")
-    else:
-        # Keep credential reference in sync if it drifted.
-        idem = find_node(wf["nodes"], "Check Idempotency")
-        existing = (idem.get("credentials") or {}).get("nocoDbApiToken") or {}
-        if existing.get("id") != cred_id:
-            idem["credentials"]["nocoDbApiToken"] = {"id": cred_id, "name": cred_name}
-            changed.append("Check Idempotency credential -> Create Lead's credential")
-        if idem["parameters"].get("jsCode") != IDEMPOTENCY_CHECK_JSCODE:
-            idem["parameters"]["jsCode"] = IDEMPOTENCY_CHECK_JSCODE
-            changed.append("Check Idempotency jsCode")
-
-    # Rewire: Calculate Lead Score -> Check Idempotency -> Create Lead in NocoDB.
     calc_conns = wf["connections"].setdefault("Calculate Lead Score", {}).setdefault("main", [[]])
     while len(calc_conns) < 1:
         calc_conns.append([])
     calc_targets = [c.get("node") for c in calc_conns[0]]
-    if calc_targets != ["Check Idempotency"]:
-        # Drop any direct Calculate->Create Lead link; route through the guard.
-        calc_conns[0] = [c for c in calc_conns[0] if c.get("node") != "Create Lead in NocoDB"]
-        if "Check Idempotency" not in [c.get("node") for c in calc_conns[0]]:
-            calc_conns[0].append({"node": "Check Idempotency", "type": "main", "index": 0})
-            changed.append("connection: Calculate Lead Score -> Check Idempotency")
-
-    idem_conns = wf["connections"].setdefault("Check Idempotency", {}).setdefault("main", [[]])
-    while len(idem_conns) < 1:
-        idem_conns.append([])
-    if "Create Lead in NocoDB" not in [c.get("node") for c in idem_conns[0]]:
-        idem_conns[0].append({"node": "Create Lead in NocoDB", "type": "main", "index": 0})
-        changed.append("connection: Check Idempotency -> Create Lead in NocoDB")
+    if "Create Lead in NocoDB" not in calc_targets:
+        # Strip any stale Check Idempotency reference.
+        calc_conns[0] = [c for c in calc_conns[0] if c.get("node") != "Check Idempotency"]
+        calc_conns[0].append({"node": "Create Lead in NocoDB", "type": "main", "index": 0})
+        changed.append("connection: Calculate Lead Score -> Create Lead in NocoDB (restored)")
+    elif "Check Idempotency" in calc_targets:
+        calc_conns[0] = [c for c in calc_conns[0] if c.get("node") != "Check Idempotency"]
+        changed.append("connection: stripped stale Check Idempotency edge")
 
     return changed
 
