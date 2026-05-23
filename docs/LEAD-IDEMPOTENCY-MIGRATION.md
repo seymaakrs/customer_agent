@@ -20,9 +20,25 @@ Belt-and-suspenders: workflow-side mapper + database-side constraint.
 
 ## Migration adımları
 
-### 1. Leadler tablosuna `external_event_id` kolonu ekle
+> **TL;DR — tek script tüm migrasyonu yapar:**
+>
+> ```bash
+> export NOCODB_BASE_URL=http://34.26.138.196
+> export NOCODB_EMAIL=<admin email>
+> export NOCODB_PASSWORD=<admin password>
+>
+> python3 scripts/nocodb_apply_idempotency_migration.py --dry-run  # plan
+> python3 scripts/nocodb_apply_idempotency_migration.py            # apply
+> ```
+>
+> Script idempotent: kolon varsa atlar, unique varsa atlar. Meta API
+> `un=True` PATCH'i kabul etmezse altta Postgres partial unique index
+> SQL'ini ekrana basar.
 
-NocoDB UI'da Leadler tablosunu aç → **+ Add Column**:
+### 1. Leadler tablosuna `external_event_id` kolonu ekle (manuel alternatif)
+
+Yukarıdaki script bunu otomatik yapar. Manuel yapmak istersen NocoDB UI'da
+Leadler tablosunu aç → **+ Add Column**:
 
 - **Title:** `external_event_id`
 - **Type:** SingleLineText (LongText değil — index için)
