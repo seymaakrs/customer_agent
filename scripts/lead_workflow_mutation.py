@@ -116,6 +116,66 @@ return [{json: {
 }}];
 """
 
+IDEMPOTENCY_CHECK_JSCODE = """// Workflow-level idempotency guard.
+// Looks up Leadler for an existing row with the same external_event_id;
+// if found, returns [] so downstream nodes (Create Lead) are not triggered.
+// If external_event_id is empty (legacy non-Zernio webhooks), passes through.
+// Belt-and-suspenders: DB-side unique constraint should also be added later,
+// but NocoDB 0.301.x SingleLineText un=true does not always materialize the
+// physical index. This guard is the portable safety net.
+const item = $input.first().json;
+const eid = item.external_event_id || '';
+if (!eid) {
+  return [{ json: item }];
+}
+
+const cred = await this.getCredentials('nocoDbApiToken');
+const host = (cred.host || '').replace(/\\/$/, '');
+const url = `${host}/api/v2/tables/m5lcgc5ifeqh38h/records`
+  + `?where=${encodeURIComponent('(external_event_id,eq,' + eid + ')')}`
+  + `&limit=1`;
+
+let exists = false;
+try {
+  const res = await this.helpers.httpRequest({
+    method: 'GET',
+    url,
+    headers: { 'xc-token': cred.apiToken, 'Accept': 'application/json' },
+    json: true,
+  });
+  exists = ((res && res.list) || []).length > 0;
+} catch (err) {
+  // On lookup failure, fail OPEN (allow the write) so a transient NocoDB
+  // outage does not block fresh leads. Duplicates remain extremely unlikely
+  // in this window (Zernio retry interval > seconds).
+  console.log('Idempotency lookup failed; proceeding with insert:', err && err.message);
+  return [{ json: item }];
+}
+
+if (exists) {
+  // Drop the item silently — duplicate.
+  return [];
+}
+return [{ json: item }];
+"""
+
+
+def make_idempotency_node(cred_id: str, cred_name: str) -> dict:
+    return {
+        "id": "a1b2c3d4-e5f6-4789-89ab-cdef01234567",
+        "name": "Check Idempotency",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [40, 0],
+        "parameters": {
+            "jsCode": IDEMPOTENCY_CHECK_JSCODE,
+        },
+        "credentials": {
+            "nocoDbApiToken": {"id": cred_id, "name": cred_name},
+        },
+    }
+
+
 ERROR_ALERT_NODE = {
     "id": "f8a3c2e1-1d4b-4c7a-9f2e-ab12cd34ef56",
     "name": "Send Lead Error Alert",
@@ -203,6 +263,51 @@ def mutate(wf):
     if "Send Lead Error Alert" not in error_targets:
         conns[1].append({"node": "Send Lead Error Alert", "type": "main", "index": 0})
         changed.append("connection: Create Lead [error] -> Send Lead Error Alert")
+
+    # Workflow-level idempotency guard. Inserted between Calculate Lead Score
+    # and Create Lead in NocoDB. Reuses Create Lead's NocoDB credential so the
+    # guard always points at the same backend.
+    cred_block = (create_node.get("credentials") or {}).get("nocoDbApiToken") or {}
+    cred_id = cred_block.get("id")
+    cred_name = cred_block.get("name") or "NocoDB"
+    if not cred_id:
+        raise SystemExit(
+            "Create Lead in NocoDB has no nocoDbApiToken credential — run "
+            "scripts/n8n_swap_nocodb_credential.py first."
+        )
+
+    if not any(n.get("name") == "Check Idempotency" for n in wf["nodes"]):
+        wf["nodes"].append(make_idempotency_node(cred_id, cred_name))
+        changed.append("+ Check Idempotency Code node")
+    else:
+        # Keep credential reference in sync if it drifted.
+        idem = find_node(wf["nodes"], "Check Idempotency")
+        existing = (idem.get("credentials") or {}).get("nocoDbApiToken") or {}
+        if existing.get("id") != cred_id:
+            idem["credentials"]["nocoDbApiToken"] = {"id": cred_id, "name": cred_name}
+            changed.append("Check Idempotency credential -> Create Lead's credential")
+        if idem["parameters"].get("jsCode") != IDEMPOTENCY_CHECK_JSCODE:
+            idem["parameters"]["jsCode"] = IDEMPOTENCY_CHECK_JSCODE
+            changed.append("Check Idempotency jsCode")
+
+    # Rewire: Calculate Lead Score -> Check Idempotency -> Create Lead in NocoDB.
+    calc_conns = wf["connections"].setdefault("Calculate Lead Score", {}).setdefault("main", [[]])
+    while len(calc_conns) < 1:
+        calc_conns.append([])
+    calc_targets = [c.get("node") for c in calc_conns[0]]
+    if calc_targets != ["Check Idempotency"]:
+        # Drop any direct Calculate->Create Lead link; route through the guard.
+        calc_conns[0] = [c for c in calc_conns[0] if c.get("node") != "Create Lead in NocoDB"]
+        if "Check Idempotency" not in [c.get("node") for c in calc_conns[0]]:
+            calc_conns[0].append({"node": "Check Idempotency", "type": "main", "index": 0})
+            changed.append("connection: Calculate Lead Score -> Check Idempotency")
+
+    idem_conns = wf["connections"].setdefault("Check Idempotency", {}).setdefault("main", [[]])
+    while len(idem_conns) < 1:
+        idem_conns.append([])
+    if "Create Lead in NocoDB" not in [c.get("node") for c in idem_conns[0]]:
+        idem_conns[0].append({"node": "Create Lead in NocoDB", "type": "main", "index": 0})
+        changed.append("connection: Check Idempotency -> Create Lead in NocoDB")
 
     return changed
 
