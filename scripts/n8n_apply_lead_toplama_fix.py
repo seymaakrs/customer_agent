@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
-"""Apply Adim 3 fix to the live 'Lead Toplama Agent' n8n workflow.
+"""Apply Lead Toplama mutations to the live n8n workflow.
 
-What this script does:
+Pulls live workflow l31p16NRZeyk4eEm, runs the same `mutate()` used on the
+repo JSON (see lead_workflow_mutation.py), and PUTs it back. A timestamped
+backup of the pre-mutation live JSON is written to /tmp first.
 
-1. GETs the live workflow l31p16NRZeyk4eEm from n8n Cloud.
-2. Replaces the 'Calculate Lead Score' node's jsCode with the Zernio-aware
-   payload mapper from `n8n/workflows/lead-toplama-agent.json`.
-3. Adds `notlar` and `ihtiyac_notu` fieldUi entries to 'Create Lead in NocoDB'
-   so the WhatsApp message text persists into Leadler.
-4. PUTs the modified workflow back. Stores a backup of the live JSON to
-   /tmp/lead-toplama.backup.<timestamp>.json before mutating.
+Changes applied (idempotent):
+1. Calculate Lead Score jsCode -> Zernio-aware mapper that emits
+   external_event_id.
+2. Create Lead in NocoDB -> field mappings notlar, ihtiyac_notu,
+   external_event_id; onError=continueErrorOutput.
+3. + Send Lead Error Alert Gmail node, wired to Create Lead's error branch.
 
-Usage (Cloud Shell or local):
-
-    export N8N_API_TOKEN='n8n_api_xxxxx'   # https://mindidai.app.n8n.cloud > Settings > n8n API
+Usage:
+    export N8N_API_TOKEN='n8n_api_xxxxx'
     python3 scripts/n8n_apply_lead_toplama_fix.py            # apply
     python3 scripts/n8n_apply_lead_toplama_fix.py --dry-run  # preview only
 
-Prerequisite: NocoDB Leadler.kaynak SingleSelect must already include the
-'WhatsApp' option, otherwise NocoDB will reject the inbound row with a 422.
+Prerequisite (one-time, per docs/LEAD-IDEMPOTENCY-MIGRATION.md):
+- NocoDB Leadler must have a `external_event_id` text column with a unique
+  index, plus the SingleSelect option `WhatsApp` on the `kaynak` column.
 """
 from __future__ import annotations
 
@@ -30,22 +31,24 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lead_workflow_mutation import mutate  # noqa: E402
+
 BASE = "https://mindidai.app.n8n.cloud/api/v1"
 WORKFLOW_ID = "l31p16NRZeyk4eEm"
-NODE_CODE = "Calculate Lead Score"
-NODE_NOCO = "Create Lead in NocoDB"
 
-REPO_WORKFLOW = (
-    Path(__file__).resolve().parent.parent
-    / "n8n"
-    / "workflows"
-    / "lead-toplama-agent.json"
-)
-
-EXTRA_FIELDS = [
-    {"fieldName": "notlar", "fieldValue": "={{ $json.notlar }}"},
-    {"fieldName": "ihtiyac_notu", "fieldValue": "={{ $json.ihtiyac_notu }}"},
-]
+# n8n public PUT only accepts these top-level keys, and `settings` only
+# allows a whitelist of properties (binaryMode/availableInMCP rejected).
+ALLOWED_SETTINGS = {
+    "saveExecutionProgress",
+    "saveManualExecutions",
+    "saveDataErrorExecution",
+    "saveDataSuccessExecution",
+    "executionTimeout",
+    "errorWorkflow",
+    "timezone",
+    "executionOrder",
+}
 
 
 def http(method: str, path: str, token: str, body=None):
@@ -66,18 +69,6 @@ def http(method: str, path: str, token: str, body=None):
         sys.exit(f"n8n API {method} {path} failed: {e.code} {e.read().decode()[:400]}")
 
 
-def find_node(nodes: list, name: str) -> dict:
-    for n in nodes:
-        if n.get("name") == name:
-            return n
-    sys.exit(f"Node not found: {name}")
-
-
-def load_repo_jscode() -> str:
-    wf = json.loads(REPO_WORKFLOW.read_text())
-    return find_node(wf["nodes"], NODE_CODE)["parameters"]["jsCode"]
-
-
 def main() -> None:
     token = os.environ.get("N8N_API_TOKEN")
     if not token:
@@ -87,11 +78,7 @@ def main() -> None:
         )
     dry = "--dry-run" in sys.argv
 
-    print(f"[1/4] Loading new jsCode from {REPO_WORKFLOW.name}")
-    new_jscode = load_repo_jscode()
-    print(f"      {len(new_jscode)} chars, {new_jscode.count(chr(10))} lines")
-
-    print(f"[2/4] GET /workflows/{WORKFLOW_ID}")
+    print(f"[1/3] GET /workflows/{WORKFLOW_ID}")
     wf = http("GET", f"/workflows/{WORKFLOW_ID}", token)
     print(f"      name={wf['name']!r} active={wf.get('active')} nodes={len(wf['nodes'])}")
 
@@ -99,39 +86,15 @@ def main() -> None:
     backup.write_text(json.dumps(wf, indent=2, ensure_ascii=False))
     print(f"      backup -> {backup}")
 
-    code_node = find_node(wf["nodes"], NODE_CODE)
-    if code_node["parameters"].get("jsCode") == new_jscode:
-        print(f"[3/4] {NODE_CODE} already up to date — nothing to do")
-    else:
-        code_node["parameters"]["jsCode"] = new_jscode
-        print(f"[3/4] Replaced jsCode in {NODE_CODE!r}")
+    print("[2/3] Applying mutations")
+    changes = mutate(wf)
+    if not changes:
+        print("      Live workflow already up to date — nothing to PUT.")
+        return
+    for c in changes:
+        print(f"      - {c}")
 
-    noco_node = find_node(wf["nodes"], NODE_NOCO)
-    fields = noco_node["parameters"]["fieldsUi"]["fieldValues"]
-    existing = {f["fieldName"] for f in fields}
-    added = []
-    for f in EXTRA_FIELDS:
-        if f["fieldName"] not in existing:
-            fields.append(f)
-            added.append(f["fieldName"])
-    if added:
-        print(f"      Added field mapping(s): {', '.join(added)}")
-    else:
-        print("      All field mappings already present")
-
-    # n8n public PUT only accepts these top-level keys, and `settings` only
-    # allows a whitelist of properties (binaryMode/availableInMCP rejected).
-    allowed_settings = {
-        "saveExecutionProgress",
-        "saveManualExecutions",
-        "saveDataErrorExecution",
-        "saveDataSuccessExecution",
-        "executionTimeout",
-        "errorWorkflow",
-        "timezone",
-        "executionOrder",
-    }
-    settings = {k: v for k, v in (wf.get("settings") or {}).items() if k in allowed_settings}
+    settings = {k: v for k, v in (wf.get("settings") or {}).items() if k in ALLOWED_SETTINGS}
     payload = {
         "name": wf["name"],
         "nodes": wf["nodes"],
@@ -142,17 +105,15 @@ def main() -> None:
         payload["staticData"] = wf["staticData"]
 
     if dry:
-        print(f"[4/4] --dry-run: would PUT {len(json.dumps(payload))} bytes — skipping")
+        print(f"[3/3] --dry-run: would PUT {len(json.dumps(payload))} bytes — skipping")
         return
 
-    print(f"[4/4] PUT /workflows/{WORKFLOW_ID}")
+    print(f"[3/3] PUT /workflows/{WORKFLOW_ID}")
     res = http("PUT", f"/workflows/{WORKFLOW_ID}", token, body=payload)
     print(f"      OK. versionId={res.get('versionId')} updatedAt={res.get('updatedAt')}")
     print()
-    print("Done. Smoke test:")
-    print("  Send a WhatsApp message from your test phone (+905439335595) to")
-    print("  Slowdays Bodrum, then check NocoDB Leadler — new row should have")
-    print("  kaynak=WhatsApp, telefon=+90..., notlar=<message text>, asama=Sicak.")
+    print("Smoke test next:")
+    print("  python3 scripts/smoke_zernio_lead.py  # idempotency assertion included")
 
 
 if __name__ == "__main__":

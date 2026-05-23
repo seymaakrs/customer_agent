@@ -33,7 +33,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Zernio webhook (message.received) -> Lead mapping.\n// Backwards compatible: generic webhook (LinkedIn/Manuel/etc) bypasses the\n// detection branch. Detection key: Zernio always sends an 'event' field plus\n// nested 'message.sender'.\nconst raw = $input.first().json.body || $input.first().json;\nconst isZernio = !!(raw && raw.event && raw.message && raw.message.sender);\n\nlet item;\nif (isZernio) {\n  const m = raw.message || {};\n  const sender = m.sender || {};\n  const conv = raw.conversation || {};\n  const platform = (m.platform || (raw.account && raw.account.platform) || '').toLowerCase();\n\n  // Phone in E.164 if Zernio gives it; otherwise reconstruct from sender.id (digits-only fallback for WA).\n  let telefon = sender.phoneNumber || '';\n  if (!telefon && /^\\d{8,}$/.test(sender.id || '')) telefon = '+' + sender.id;\n\n  // Map Zernio platform -> NocoDB Leadler.kaynak SingleSelect option.\n  // 'WhatsApp' option must exist in NocoDB (Adim 3 prerequisite).\n  const kaynakMap = { whatsapp: 'WhatsApp', instagram: 'IG DM', facebook: 'IG DM' };\n  const kaynak = kaynakMap[platform] || 'Manuel';\n\n  // Slowdays cold outreach is otelci-bazli; default sektor speeds scoring.\n  const sektorDefault = platform === 'whatsapp' ? 'Otelcilik' : '';\n\n  item = {\n    ad_soyad: sender.name || conv.participantName || '',\n    email: '',\n    telefon,\n    sirket_adi: sender.name || conv.participantName || '',\n    sektor: sektorDefault,\n    konum: '',\n    kaynak,\n    // Inbound message = lead replied = sicak (eski monitor mantigi).\n    asama: m.direction === 'incoming' ? 'Sicak' : 'Yeni',\n    notlar: m.text || '',\n    ihtiyac_notu: m.text ? ('Zernio ' + platform + ': ' + String(m.text).slice(0, 200)) : ''\n  };\n} else {\n  item = raw;\n}\n\nlet skor = 0;\nconst hedefSektorler = ['Otelcilik', 'Yeme-Icme', 'Turizm', 'Spa-Wellness'];\nif (hedefSektorler.includes(item.sektor)) skor += 20;\nelse if (item.sektor && item.sektor !== 'Diger') skor += 10;\n\nconst hedefKonumlar = ['Bodrum', 'Marmaris', 'Fethiye', 'Datca', 'Gocek'];\nif (hedefKonumlar.some(k => (item.konum || '').includes(k))) skor += 15;\nelse if ((item.konum || '').includes('Mugla')) skor += 10;\n\nif (item.kaynak === 'Meta Ads') skor += 25;\nelse if (item.kaynak === 'WhatsApp') skor += 20;\nelse if (item.kaynak === 'Clay' || item.kaynak === 'LinkedIn') skor += 15;\nelse if (item.kaynak === 'IG DM') skor += 10;\nelse if (item.kaynak === 'Manuel') skor += 5;\n\nif (item.asama === 'Sicak') skor += 30;\nelse if (item.asama === 'Ilik') skor += 20;\nelse if (item.asama === 'Yeni') skor += 5;\n\nconst validSectors = ['Otelcilik','Yeme-Icme','Perakende','Turizm','E-ticaret','Tekne-Yat','Emlak','Spa-Wellness','Doktor-Uzman','Koc-Egitmen','Kurumsal-Kamu','Butik-Moda','Kafe','Restoran','Diger'];\nconst sektorClean = validSectors.includes(item.sektor) ? item.sektor : 'Diger';\n\nreturn [{json: {\n  ad_soyad: item.ad_soyad || '',\n  email: item.email || '',\n  telefon: item.telefon || '',\n  sirket_adi: item.sirket_adi || '',\n  sektor: sektorClean,\n  konum: item.konum || '',\n  kaynak: item.kaynak || 'Manuel',\n  asama: item.asama || 'Yeni',\n  lead_skoru: skor,\n  notlar: item.notlar || '',\n  ihtiyac_notu: item.ihtiyac_notu || ''\n}}];\n"
+        "jsCode": "// Zernio webhook (message.received) -> Lead mapping.\n// Backwards compatible: generic webhook (LinkedIn/Manuel/etc) bypasses the\n// detection branch. Detection key: Zernio always sends an 'event' field plus\n// nested 'message.sender'.\nconst raw = $input.first().json.body || $input.first().json;\nconst isZernio = !!(raw && raw.event && raw.message && raw.message.sender);\n\nlet item;\nlet externalEventId = '';\nif (isZernio) {\n  const m = raw.message || {};\n  const sender = m.sender || {};\n  const conv = raw.conversation || {};\n  const platform = (m.platform || (raw.account && raw.account.platform) || '').toLowerCase();\n\n  // Phone in E.164 if Zernio gives it; otherwise reconstruct from sender.id (digits-only fallback for WA).\n  let telefon = sender.phoneNumber || '';\n  if (!telefon && /^\\d{8,}$/.test(sender.id || '')) telefon = '+' + sender.id;\n\n  // Map Zernio platform -> NocoDB Leadler.kaynak SingleSelect option.\n  // 'WhatsApp' option must exist in NocoDB (Adim 3 prerequisite).\n  const kaynakMap = { whatsapp: 'WhatsApp', instagram: 'IG DM', facebook: 'IG DM' };\n  const kaynak = kaynakMap[platform] || 'Manuel';\n\n  // Slowdays cold outreach is otelci-bazli; default sektor speeds scoring.\n  const sektorDefault = platform === 'whatsapp' ? 'Otelcilik' : '';\n\n  // Idempotency key — Zernio always sends message.id (server UUID).\n  // platformMessageId (e.g. wamid.xxx) is the WhatsApp Cloud API id, used as a\n  // secondary fallback. raw.id is the envelope-level event id.\n  externalEventId = m.id || m.platformMessageId || raw.id || '';\n\n  item = {\n    ad_soyad: sender.name || conv.participantName || '',\n    email: '',\n    telefon,\n    sirket_adi: sender.name || conv.participantName || '',\n    sektor: sektorDefault,\n    konum: '',\n    kaynak,\n    // Inbound message = lead replied = sicak (eski monitor mantigi).\n    asama: m.direction === 'incoming' ? 'Sicak' : 'Yeni',\n    notlar: m.text || '',\n    ihtiyac_notu: m.text ? ('Zernio ' + platform + ': ' + String(m.text).slice(0, 200)) : ''\n  };\n} else {\n  item = raw;\n  // Non-Zernio (LinkedIn/Manuel) callers may supply their own idempotency key.\n  externalEventId = raw.external_event_id || raw.event_id || '';\n}\n\nlet skor = 0;\nconst hedefSektorler = ['Otelcilik', 'Yeme-Icme', 'Turizm', 'Spa-Wellness'];\nif (hedefSektorler.includes(item.sektor)) skor += 20;\nelse if (item.sektor && item.sektor !== 'Diger') skor += 10;\n\nconst hedefKonumlar = ['Bodrum', 'Marmaris', 'Fethiye', 'Datca', 'Gocek'];\nif (hedefKonumlar.some(k => (item.konum || '').includes(k))) skor += 15;\nelse if ((item.konum || '').includes('Mugla')) skor += 10;\n\nif (item.kaynak === 'Meta Ads') skor += 25;\nelse if (item.kaynak === 'WhatsApp') skor += 20;\nelse if (item.kaynak === 'Clay' || item.kaynak === 'LinkedIn') skor += 15;\nelse if (item.kaynak === 'IG DM') skor += 10;\nelse if (item.kaynak === 'Manuel') skor += 5;\n\nif (item.asama === 'Sicak') skor += 30;\nelse if (item.asama === 'Ilik') skor += 20;\nelse if (item.asama === 'Yeni') skor += 5;\n\nconst validSectors = ['Otelcilik','Yeme-Icme','Perakende','Turizm','E-ticaret','Tekne-Yat','Emlak','Spa-Wellness','Doktor-Uzman','Koc-Egitmen','Kurumsal-Kamu','Butik-Moda','Kafe','Restoran','Diger'];\nconst sektorClean = validSectors.includes(item.sektor) ? item.sektor : 'Diger';\n\nreturn [{json: {\n  ad_soyad: item.ad_soyad || '',\n  email: item.email || '',\n  telefon: item.telefon || '',\n  sirket_adi: item.sirket_adi || '',\n  sektor: sektorClean,\n  konum: item.konum || '',\n  kaynak: item.kaynak || 'Manuel',\n  asama: item.asama || 'Yeni',\n  lead_skoru: skor,\n  notlar: item.notlar || '',\n  ihtiyac_notu: item.ihtiyac_notu || '',\n  external_event_id: externalEventId\n}}];\n"
       }
     },
     {
@@ -99,6 +99,10 @@
             {
               "fieldName": "ihtiyac_notu",
               "fieldValue": "={{ $json.ihtiyac_notu }}"
+            },
+            {
+              "fieldName": "external_event_id",
+              "fieldValue": "={{ $json.external_event_id }}"
             }
           ]
         }
@@ -108,7 +112,8 @@
           "id": "REDACTED",
           "name": "NocoDB Token account 2"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "id": "633278eb-664c-46cf-b928-935d9822f3c5",
@@ -180,6 +185,31 @@
         }
       },
       "webhookId": "e709b8df-ead3-4b06-ad7a-16dd4960d5ee"
+    },
+    {
+      "id": "f8a3c2e1-1d4b-4c7a-9f2e-ab12cd34ef56",
+      "name": "Send Lead Error Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        160
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "seymaakrs@gmail.com",
+        "subject": "=[Lead Toplama] NocoDB yazma hatasi (event_id={{ $json.external_event_id }})",
+        "emailType": "html",
+        "message": "=<h3>NocoDB Create Lead hata verdi</h3><p>Bu mesaj iki sebepten gelir: (a) duplicate external_event_id (idempotency koruyucu calisti, beklenen davranis) veya (b) SingleSelect option NocoDB sema'sinda eksik (orn. WhatsApp).</p><p><b>external_event_id:</b> {{ $json.external_event_id }}</p><p><b>kaynak:</b> {{ $json.kaynak }}</p><p><b>telefon:</b> {{ $json.telefon }}</p><p><b>asama:</b> {{ $json.asama }}</p><p><b>n8n error:</b> {{ $json.error || $json.message || 'unknown' }}</p><hr><p>Idempotency (a) ise <b>aksiyon yok</b>. Schema (b) ise NocoDB Leadler.kaynak option listesine eksik degeri ekleyin.</p>",
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REDACTED",
+          "name": "Gmail account"
+        }
+      }
     }
   ],
   "connections": {
@@ -210,6 +240,13 @@
         [
           {
             "node": "Is Hot or Warm",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Lead Error Alert",
             "type": "main",
             "index": 0
           }

@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""Adim 3 smoke test — Zernio payload mapping fix end-to-end.
+"""Lead Toplama smoke test — Zernio mapping + idempotency end-to-end.
 
-Three steps in one shot:
+Four steps in one shot:
 
 1. Sign in to NocoDB (email+password -> JWT) and add 'WhatsApp' to the
    Leadler.kaynak SingleSelect options if missing. NocoDB API tokens (xc-token)
    only allow data CRUD; schema mutation needs a JWT.
 2. POST a synthetic Zernio `message.received` webhook to the n8n Lead Toplama
-   webhook (https://mindidai.app.n8n.cloud/webhook/lead-toplama). This drives
-   the freshly-deployed Calculate Lead Score code node end-to-end.
-3. Read the latest Leadler row via xc-token and assert the mapping landed:
-   kaynak == 'WhatsApp', telefon, notlar non-empty, asama == 'Sicak'.
+   webhook with a deterministic external_event_id derived from the run id.
+3. Verify Leadler row: kaynak=WhatsApp, asama=Sicak, notlar non-empty,
+   external_event_id matches, lead_skoru >= 50.
+4. POST the SAME payload a second time and verify only ONE row exists for
+   that external_event_id (idempotency assertion — covers Zernio at-least-once
+   delivery and user double-tap).
 
 Required env:
     NOCODB_BASE_URL    e.g. http://34.26.138.196
@@ -106,16 +108,16 @@ def step_1_add_whatsapp_option(base: str, email: str, password: str) -> None:
     print("      Added 'WhatsApp' option ✓")
 
 
-def step_2_fire_webhook(webhook_url: str) -> str:
-    print(f"[2/3] POST synthetic Zernio webhook -> {webhook_url}")
-    payload = {
-        "id": f"evt_smoke_{int(time.time())}",
+def build_payload(run_id: int) -> dict:
+    """Deterministic per-run Zernio payload. message.id is the idempotency key."""
+    return {
+        "id": f"evt_smoke_{run_id}",
         "event": "message.received",
         "message": {
-            "id": f"msg_smoke_{int(time.time())}",
+            "id": f"msg_smoke_{run_id}",
             "conversationId": "conv_smoke",
             "platform": "whatsapp",
-            "platformMessageId": "wamid.smoke",
+            "platformMessageId": f"wamid.smoke.{run_id}",
             "direction": "incoming",
             "text": "Smoke test: Slowdays paketi hakkinda bilgi alabilir miyim?",
             "attachments": [],
@@ -138,6 +140,9 @@ def step_2_fire_webhook(webhook_url: str) -> str:
         "account": {"id": "69ecc2273a63baf2053dfc21", "platform": "whatsapp", "username": "Slowdays Bodrum"},
         "timestamp": "2026-05-09T16:00:00Z",
     }
+
+
+def fire_webhook(webhook_url: str, payload: dict, *, label: str) -> None:
     code, body = http(
         "POST",
         webhook_url,
@@ -145,53 +150,82 @@ def step_2_fire_webhook(webhook_url: str) -> str:
         body=payload,
     )
     if code >= 300:
-        sys.exit(f"      Webhook POST failed: {code} {body}")
-    print(f"      Webhook accepted ({code}) — body: {str(body)[:120]}")
-    return payload["message"]["sender"]["phoneNumber"]
+        sys.exit(f"      Webhook POST ({label}) failed: {code} {body}")
+    print(f"      [{label}] webhook accepted ({code}) — body: {str(body)[:120]}")
 
 
-def step_3_verify(base: str, token: str, expected_phone: str) -> None:
-    print("[3/3] NocoDB Leadler — verify last row matches mapping")
+def query_rows_by_event_id(base: str, token: str, external_event_id: str) -> list[dict]:
     headers = {"xc-token": token, "Content-Type": "application/json"}
-    # Wait briefly for n8n to write
+    # URL-encode would be nicer, but external_event_id is alphanum/dot only here.
+    where = f"(external_event_id,eq,{external_event_id})"
+    code, res = http(
+        "GET",
+        f"{base}/api/v2/tables/{LEADS_TABLE_ID}/records?where={where}&limit=10",
+        headers=headers,
+    )
+    if code != 200:
+        sys.exit(f"      GET records by event_id failed: {code} {res}")
+    return res.get("list") or []
+
+
+def step_3_verify_mapping(base: str, token: str, external_event_id: str) -> None:
+    print(f"[3/4] NocoDB Leadler — verify row for external_event_id={external_event_id!r}")
     for attempt in range(6):
         time.sleep(2)
-        code, res = http(
-            "GET",
-            f"{base}/api/v2/tables/{LEADS_TABLE_ID}/records?sort=-CreatedAt&limit=3",
-            headers=headers,
-        )
-        if code != 200:
-            sys.exit(f"      GET records failed: {code} {res}")
-        rows = res.get("list") or []
-        # Find a row whose phone matches our smoke phone
-        match = next((r for r in rows if (r.get("telefon") or "").replace(" ", "") == expected_phone), None)
-        if match:
+        rows = query_rows_by_event_id(base, token, external_event_id)
+        if rows:
+            match = rows[0]
             print(f"      Found row Id={match.get('Id')} after {attempt + 1} polls")
-            print(f"        ad_soyad     = {match.get('ad_soyad')!r}")
-            print(f"        telefon      = {match.get('telefon')!r}")
-            print(f"        kaynak       = {match.get('kaynak')!r}")
-            print(f"        asama        = {match.get('asama')!r}")
-            print(f"        lead_skoru   = {match.get('lead_skoru')!r}")
-            print(f"        sektor       = {match.get('sektor')!r}")
-            print(f"        notlar       = {(match.get('notlar') or '')[:80]!r}")
-            print(f"        ihtiyac_notu = {(match.get('ihtiyac_notu') or '')[:80]!r}")
+            print(f"        ad_soyad           = {match.get('ad_soyad')!r}")
+            print(f"        telefon            = {match.get('telefon')!r}")
+            print(f"        kaynak             = {match.get('kaynak')!r}")
+            print(f"        asama              = {match.get('asama')!r}")
+            print(f"        lead_skoru         = {match.get('lead_skoru')!r}")
+            print(f"        sektor             = {match.get('sektor')!r}")
+            print(f"        notlar             = {(match.get('notlar') or '')[:80]!r}")
+            print(f"        ihtiyac_notu       = {(match.get('ihtiyac_notu') or '')[:80]!r}")
+            print(f"        external_event_id  = {match.get('external_event_id')!r}")
 
             checks = [
                 ("kaynak == 'WhatsApp'", match.get("kaynak") == "WhatsApp"),
                 ("asama == 'Sicak'", match.get("asama") == "Sicak"),
                 ("notlar non-empty", bool(match.get("notlar"))),
                 ("lead_skoru >= 50", (match.get("lead_skoru") or 0) >= 50),
+                ("external_event_id round-trips", match.get("external_event_id") == external_event_id),
             ]
             failed = [name for name, ok in checks if not ok]
             if failed:
                 print(f"      ✗ FAILED: {failed}")
                 sys.exit(2)
-            print("      All assertions passed ✓")
+            print("      All mapping assertions passed ✓")
             return
-        print(f"      ...not yet (poll {attempt + 1}/6, latest phones: "
-              f"{[r.get('telefon') for r in rows]})")
+        print(f"      ...not yet (poll {attempt + 1}/6)")
     sys.exit("      Timed out waiting for the smoke row to appear")
+
+
+def step_4_verify_idempotency(
+    base: str, token: str, webhook_url: str, payload: dict, external_event_id: str
+) -> None:
+    print(f"[4/4] Idempotency — re-fire SAME payload, expect row count to stay at 1")
+    fire_webhook(webhook_url, payload, label="replay")
+    # Give n8n time to process & either dedupe via unique index or no-op via guard.
+    for attempt in range(6):
+        time.sleep(2)
+        rows = query_rows_by_event_id(base, token, external_event_id)
+        count = len(rows)
+        print(f"      poll {attempt + 1}/6 — rows for event_id={external_event_id!r}: {count}")
+        if count > 1:
+            ids = [r.get("Id") for r in rows]
+            sys.exit(
+                f"      ✗ Idempotency violated: {count} rows for the same event_id "
+                f"(Ids={ids}). NocoDB unique index on external_event_id likely missing — "
+                f"see docs/LEAD-IDEMPOTENCY-MIGRATION.md."
+            )
+        if attempt >= 2 and count == 1:
+            # Stable for at least 2 polls past the replay window.
+            print("      Idempotency holds ✓ (1 row after replay)")
+            return
+    print("      Idempotency holds ✓ (1 row throughout)")
 
 
 def main() -> None:
@@ -202,9 +236,16 @@ def main() -> None:
     webhook = env("LEAD_WEBHOOK", optional=True, default=DEFAULT_WEBHOOK)
 
     step_1_add_whatsapp_option(base, email, password)
-    phone = step_2_fire_webhook(webhook)
-    step_3_verify(base, token, phone)
-    print("\nSmoke complete. Adim 3 end-to-end yesil.")
+
+    run_id = int(time.time())
+    payload = build_payload(run_id)
+    external_event_id = payload["message"]["id"]
+    print(f"[2/4] POST synthetic Zernio webhook -> {webhook} (event_id={external_event_id})")
+    fire_webhook(webhook, payload, label="initial")
+
+    step_3_verify_mapping(base, token, external_event_id)
+    step_4_verify_idempotency(base, token, webhook, payload, external_event_id)
+    print("\nSmoke complete. Lead Toplama end-to-end + idempotency yesil.")
 
 
 if __name__ == "__main__":
