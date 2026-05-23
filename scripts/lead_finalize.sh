@@ -38,6 +38,11 @@ elif [ -n "${NOCODB_DOCKER:-}" ]; then
   echo "  Path B: docker exec into $NOCODB_DOCKER"
   echo "$SQL" | docker exec -i "$NOCODB_DOCKER" psql -U "${PGUSER:-postgres}" -d "${PGDATABASE:-nocodb}" -v ON_ERROR_STOP=1
   echo "  ✓ index ensured"
+elif [ -n "${GCE_INSTANCE:-}" ] && [ -n "${GCE_ZONE:-}" ]; then
+  echo "  Path C: gcloud compute ssh into $GCE_INSTANCE ($GCE_ZONE)"
+  REMOTE_CMD="docker exec -i \$(docker ps --format '{{.Names}}' | grep -i nocodb | head -1) psql -U ${PGUSER:-postgres} -d ${PGDATABASE:-nocodb} -v ON_ERROR_STOP=1"
+  echo "$SQL" | gcloud compute ssh "$GCE_INSTANCE" --zone="$GCE_ZONE" --command="$REMOTE_CMD"
+  echo "  ✓ index ensured"
 else
   cat <<EOF
   Postgres erişimi tanımlı değil. İki yol:
@@ -49,6 +54,12 @@ else
   B) NocoDB Docker container içinden:
        export NOCODB_DOCKER=<container name>      # docker ps | grep nocodb
        export PGUSER=postgres PGDATABASE=nocodb   # gerekirse override
+       ./scripts/lead_finalize.sh
+
+  C) Uzak GCE VM'ye SSH ile (en yaygın):
+       gcloud compute instances list           # VM adını ve zone'u bul
+       export GCE_INSTANCE=<vm-name>  GCE_ZONE=<zone>
+       export PGUSER=postgres PGDATABASE=nocodb # gerekirse override
        ./scripts/lead_finalize.sh
 
   Veya tek seferlik manuel (VM SSH'inde):
