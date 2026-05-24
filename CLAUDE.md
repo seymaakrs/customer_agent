@@ -2,7 +2,7 @@
 
 > **HER YENI SESSION BASLANGICINDA OKU.** Bu dosya ve `SESSION_NOTES.md` projenin kalici hafizasidir.
 >
-> ⚡ **ÖNCE OKU:** [`docs/DEVIR-2026-05-01.md`](docs/DEVIR-2026-05-01.md) — En son durum, kritik sabitler (tablo ID'leri, revision ID'leri, rollback komutu), bağımlılık sırası, kullanıcı tercihleri. Bu dosya yeni session'ın "kaldığı yerden devam" rehberidir.
+> ⚡ **ÖNCE OKU:** [`docs/DEVIR-2026-05-14.md`](docs/DEVIR-2026-05-14.md) — EN SON durum (Faz A→D marka kimliği, Zernio fix, kalan iş listesi A1.1→D3, nerede kaldık). Sonra: `mind-agent/docs/ROLLBACK.md`, `mind-agent/CLAUDE.md`, eski `docs/DEVIR-2026-05-01.md`. Bu dosya yeni session'ın "kaldığı yerden devam" rehberidir.
 
 ## Proje Ozeti
 
@@ -107,6 +107,7 @@ mind-id/             Next.js admin paneli (UI ve n8n proxy)
 5. **Belirsiz bir sey varsa:** VARSAYIM YAPMA, kullaniciya sor.
 6. **Kullaniciya soracagin sey hakkinda:** Sadece projeye ait bilgi sor. Yetki, hesap, sifre vb. icin sorma — kullanicinin tum yetkileri var.
 7. Kullanici yeni mezun bir yazilim muhendisi gibi davranir — kavramlari acikla, surece dahil et.
+8. **ROLLBACK ZORUNLU (kullanici kalici karari, 2026-05-15):** Canli/geri-donulmesi zor HER degisiklikten ONCE mevcut hali repoya yedekle (n8n workflow → `n8n/backups/<ad>.<tarih>.pre-<degisiklik>.json`; kod → commit). Yedek + nasil geri donulecegi devir notuna YAZILACAK. Silme yerine geri-donulebilir yontem tercih et (n8n: hard-delete degil archive). "Her zaman bu haline geri donebilelim" sarttir.
 
 ## n8n Workflow Envanteri (Session 3 — 2026-04-28)
 
