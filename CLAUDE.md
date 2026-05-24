@@ -248,3 +248,19 @@ Tum 6 master agent (LinkedIn, Meta, Clay, IG DM, Takip, Itiraz) icin:
 | Itiraz | Itiraz Agent (ayri workflow) | Mesaj icerigi tetikler |
 
 **Onemli:** Meta haricindeki "av" kanallari Lead Toplama Agent'in webhook'u uzerinden NocoDB'ye yaziyor. Yani master mimari'deki "her agent ayri" yerine n8n'de "1 generic webhook + 1 ozel Meta trigger" yaklasimi tercih edilmis.
+
+---
+
+## 🧹 Açık İş Bırakma Kuralı (Kalıcı — 2026-05-24)
+
+**Kural:** Yeni bir göreve başlamadan ÖNCE Claude tüm repolarda (`mind-id`, `mind-agent`, `customer_agent`) açık PR ve unutulmuş branch olup olmadığını **mutlaka kontrol eder**. Açık iş varsa önce onları temizler (merge / kapat / arşivle), sonra yeni göreve başlar.
+
+**Sebep:** Açık PR + yarım branch birikince Claude'un kafası karışıyor — hangi kod aktif, hangi değişiklik nerede belirsizleşiyor. Temiz başlangıç = doğru karar.
+
+**Session başında zorunlu kontrol:**
+1. Her 3 repoda `gh pr list --state open` (veya MCP `list_pull_requests`)
+2. Her 3 repoda PR'sız stale branch listesi
+3. Açık iş varsa kullanıcıya rapor et + temizlik planı sun
+4. Temizlik bitmeden yeni iş başlatma
+
+Bu kural CLAUDE.md'lerin sonuna her 3 repoda da yazıldı; biri silinirse diğerlerinden geri yüklenir.
