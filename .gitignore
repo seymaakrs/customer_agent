@@ -1,0 +1,10 @@
+.env
+.env.*
+.claude/
+__pycache__/
+*.py[cod]
+
+# Secrets — never commit
+*credentials*.json
+serviceAccount.json
+*-service-account.json
