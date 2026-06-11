@@ -2,7 +2,7 @@
 
 > **HER YENI SESSION BASLANGICINDA OKU.** Bu dosya ve `SESSION_NOTES.md` projenin kalici hafizasidir.
 >
-> ⚡ **ÖNCE OKU:** [`docs/DEVIR-2026-05-14.md`](docs/DEVIR-2026-05-14.md) — EN SON durum (Faz A→D marka kimliği, Zernio fix, kalan iş listesi A1.1→D3, nerede kaldık). Sonra: `mind-agent/docs/ROLLBACK.md`, `mind-agent/CLAUDE.md`, eski `docs/DEVIR-2026-05-01.md`. Bu dosya yeni session'ın "kaldığı yerden devam" rehberidir.
+> ⚡ **ÖNCE OKU:** [`docs/DEVIR-2026-06-11.md`](docs/DEVIR-2026-06-11.md) — EN SON durum (Neon PG şeması uygulandı, Cloud Run deploy Şeyma'da). Sonra: [`docs/DEVIR-2026-05-14.md`](docs/DEVIR-2026-05-14.md) — EN SON durum (Faz A→D marka kimliği, Zernio fix, kalan iş listesi A1.1→D3, nerede kaldık). Sonra: `mind-agent/docs/ROLLBACK.md`, `mind-agent/CLAUDE.md`, eski `docs/DEVIR-2026-05-01.md`. Bu dosya yeni session'ın "kaldığı yerden devam" rehberidir.
 
 ## Proje Ozeti
 
@@ -23,6 +23,8 @@
 | Agent yapilanmasi | Yeni alt-modul: `mind-agent/src/agents/sales/` |
 | Orkestrasyon modeli | **Hibrit:** Sablon/cron akislar n8n'de, LLM analiz/personalizasyon mind-agent'ta |
 | Ilk entegre edilecek agent | **Meta Reklam Agent** (Lead Form trigger zaten hazir) |
+| Lead Ingestion hedef mimari (2026-06-11) | Tum kaynaklar → `/leads/ingest` (Cloud Run) → **Neon PostgreSQL** → NocoDB `db.mindidai.com.tr` (sadece panel) → Gmail API → hello@slowdaysai.com. Detay: `docs/PLAN-LEAD-INGESTION-2026-06-11.md` |
+| Veritabani motoru (2026-06-11) | **Neon PostgreSQL** (Supabase degil, VM degil). Sema %100 standart PG — ileride AWS RDS'e tasinabilir. pgvector altyapisi korunur (AI memory icin). NocoDB sadece external-source panel. |
 
 ## Hazir Olan Altyapi (Session 3 — 2026-04-28 sonrasi GUNCEL)
 
