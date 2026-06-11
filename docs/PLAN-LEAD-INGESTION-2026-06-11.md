@@ -52,7 +52,7 @@ Kritik kavram: NocoDB verinin sahibi olmaktan çıkar, PostgreSQL üstünde **pe
 - Çıktı: HTTPS'li NocoDB, veri kaybı riski sıfır
 
 ### Faz 1 — PostgreSQL şema (1 gün)
-- [ ] PG'de `leads`, `etkilesimler`, `takip_kuyrugu`, `pipeline` (NOCODB-SCHEMA-V2 alanları baz)
+- [ ] **Neon PostgreSQL** projesinde `leads`, `etkilesimler` (karar 2026-06-11: VM değil; standart PG, RDS-taşınabilir, pgvector-hazır)
 - [ ] `external_id`, `leadgen_id`, `external_message_id` → **gerçek UNIQUE index**
 - [ ] NocoDB'ye external source olarak bağla
 - Çıktı: boş ama sağlam veri katmanı
