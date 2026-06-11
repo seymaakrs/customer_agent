@@ -4,6 +4,28 @@
 
 ---
 
+## Session — 2026-06-11 (Lead Ingestion + Neon PostgreSQL)
+
+### Yapilanlar
+- Mimari audit: 3 ada tespit edildi (VM NocoDB / NocoDB Cloud / mindid-nocodb kaynak kod)
+- Plan onaylandi: `docs/PLAN-LEAD-INGESTION-2026-06-11.md` (tek ingestion API + PG + NocoDB pencere)
+- **Karar: Neon PostgreSQL** (VM degil, Supabase degil) — standart PG, RDS-tasinabilir, pgvector-hazir
+- Lead Ingestion API kodu yazildi: `services/lead-ingestion/` (FastAPI, testler yesil)
+- **PG semasi Neon'a UYGULANDI** (Neon SQL Editor uzerinden, Seyma calistirdi)
+- Runbook Neon adimlarina gore yeniden yazildi: `docs/RUNBOOK-FAZ0-FAZ1.md`
+
+### Devredilen isler (Seyma)
+- Cloud Run deploy (komutlar `docs/DEVIR-2026-06-11.md`'de hazir)
+- Neon sifre reset (string sohbette goruldu) + Secret Manager kayitlari
+- NocoDB panelini Neon'a baglama (runbook 1.3)
+
+### Onemli kisitlar (sonraki Claude session icin)
+- Bu Claude ortami Neon'a ERISEMIYOR: 5432 kapali, `*.neon.tech` HTTPS allowlist'te yok.
+  Cozum: environment Network access ayarina `*.neon.tech` eklenirse SQL buradan calisir.
+- Henuz hicbir kaynak yeni API'ye baglanmadi — eski n8n yolu aynen calisiyor, risk sifir.
+
+---
+
 ## Session 3 — 2026-04-28 (n8n node parametreleri detayli)
 
 ### Calisilan workflow'lar - Detaylar
