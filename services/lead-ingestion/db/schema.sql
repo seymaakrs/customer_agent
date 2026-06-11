@@ -48,3 +48,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS etkilesimler_external_message_id_key
     ON etkilesimler (external_message_id) WHERE external_message_id IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS etkilesimler_lead_id_idx ON etkilesimler (lead_id);
+
+-- Ileride AI memory / semantic search icin (Neon pgvector destekler).
+-- Ihtiyac dogdugunda ac:
+-- CREATE EXTENSION IF NOT EXISTS vector;
+-- ALTER TABLE leads ADD COLUMN IF NOT EXISTS embedding vector(1536);

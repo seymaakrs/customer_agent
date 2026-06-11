@@ -23,7 +23,8 @@
 | Agent yapilanmasi | Yeni alt-modul: `mind-agent/src/agents/sales/` |
 | Orkestrasyon modeli | **Hibrit:** Sablon/cron akislar n8n'de, LLM analiz/personalizasyon mind-agent'ta |
 | Ilk entegre edilecek agent | **Meta Reklam Agent** (Lead Form trigger zaten hazir) |
-| Lead Ingestion hedef mimari (2026-06-11) | Tum kaynaklar → mind-agent `/leads/ingest` (Cloud Run) → PostgreSQL (VM) → NocoDB `db.mindidai.com.tr` (pencere) → Gmail API → hello@slowdaysai.com. Detay: `docs/PLAN-LEAD-INGESTION-2026-06-11.md` |
+| Lead Ingestion hedef mimari (2026-06-11) | Tum kaynaklar → `/leads/ingest` (Cloud Run) → **Neon PostgreSQL** → NocoDB `db.mindidai.com.tr` (sadece panel) → Gmail API → hello@slowdaysai.com. Detay: `docs/PLAN-LEAD-INGESTION-2026-06-11.md` |
+| Veritabani motoru (2026-06-11) | **Neon PostgreSQL** (Supabase degil, VM degil). Sema %100 standart PG — ileride AWS RDS'e tasinabilir. pgvector altyapisi korunur (AI memory icin). NocoDB sadece external-source panel. |
 
 ## Hazir Olan Altyapi (Session 3 — 2026-04-28 sonrasi GUNCEL)
 

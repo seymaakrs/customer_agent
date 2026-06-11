@@ -34,7 +34,7 @@ skor/dedup mantığı n8n workflow'larına dağılmış.
    4. pipeline aşaması + takip tarihi
    5. AI satış notu (OpenAI Agents SDK)
             ▼
- PostgreSQL (GCP VM)  — gerçek UNIQUE index'ler, SQL, yedeklenebilir
+ Neon PostgreSQL (yonetilen)  — gerçek UNIQUE index'ler, SQL, yedeklenebilir
             ▼  (external data source)
  NocoDB → https://db.mindidai.com.tr  — sadece görüntüleme/düzenleme penceresi
             ▼  Sicak/Ilik ise
